@@ -251,7 +251,7 @@ namespace Schemer {
             }
         }
         const double coeff = config.dt / (2.0 * config.get_dx());
-        return - coeff * V;
+        return coeff * V;
     }
 
     inline Eigen::MatrixXd FractionalScheme::build_diffusion_matrix() const {
