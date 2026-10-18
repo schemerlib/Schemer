@@ -36,10 +36,10 @@ TEST_CASE("Builder build_setup uses default inputs") {
 TEST_CASE("Builder build_setup places initial state at zero index") {
     Builder builder;
     builder.set_alpha(1.5)
-           .set_num_intervals(4)
-           .set_length(4.0)
-           .set_dt(0.01)
-           .set_zero_index(1);
+            .set_num_intervals(4)
+            .set_length(4.0)
+            .set_dt(0.01)
+            .set_zero_index(1);
 
     const Setup setup = builder.build_setup();
 
@@ -54,10 +54,10 @@ TEST_CASE("Builder build_setup places initial state at zero index") {
 TEST_CASE("Builder build_setup places initial state at zero distance") {
     Builder builder;
     builder.set_alpha(1.5)
-           .set_num_intervals(4)
-           .set_length(8.0)
-           .set_dt(0.01)
-           .set_zero_distance(2.0);
+            .set_num_intervals(4)
+            .set_length(8.0)
+            .set_dt(0.01)
+            .set_zero_distance(2.0);
 
     const Setup setup = builder.build_setup();
 
@@ -76,14 +76,14 @@ TEST_CASE("Builder build_setup uses configured index and vectors") {
     const std::vector<double> initial_values{1.0, 2.0, 3.0, 4.0, 5.0};
     const std::vector<double> force_values{-1.0, -0.5, 0.0, 0.5, 1.0};
     builder.set_alpha(1.5)
-           .set_num_intervals(4)
-           .set_length(4.0)
-           .set_dt(0.01)
-           .set_zero_index(1)
-           .set_initial_conditions(initial_values)
-           .set_force(force_values)
-           .set_reset_index(3)
-           .set_reset_rate(0.2);
+            .set_num_intervals(4)
+            .set_length(4.0)
+            .set_dt(0.01)
+            .set_zero_index(1)
+            .set_initial_conditions(initial_values)
+            .set_force(force_values)
+            .set_reset_index(3)
+            .set_reset_rate(0.2);
 
     const Setup setup = builder.build_setup();
 
@@ -105,14 +105,40 @@ TEST_CASE("Builder build_setup uses configured index and vectors") {
     CHECK_UNARY(setup.step_matrix.allFinite());
 }
 
+TEST_CASE("Builder applies the configured force scheme") {
+    const std::vector<double> force_values{-1.0, 0.0, 1.0, 2.0, 3.0};
+    Builder centered_builder;
+    centered_builder.set_alpha(1.5)
+            .set_num_intervals(4)
+            .set_length(4.0)
+            .set_dt(0.01)
+            .set_force(force_values)
+            .set_force_scheme(ForceSchemeType::SecondOrderCentered);
+
+    Builder upwind_builder;
+    upwind_builder.set_alpha(1.5)
+            .set_num_intervals(4)
+            .set_length(4.0)
+            .set_dt(0.01)
+            .set_force(force_values)
+            .set_force_scheme(ForceSchemeType::FirstOrderUpwind);
+
+    const Setup centered_setup = centered_builder.build_setup();
+    const Setup upwind_setup = upwind_builder.build_setup();
+
+    CHECK_EQ(centered_setup.config.force_scheme, ForceSchemeType::SecondOrderCentered);
+    CHECK_EQ(upwind_setup.config.force_scheme, ForceSchemeType::FirstOrderUpwind);
+    CHECK_GT((centered_setup.step_matrix - upwind_setup.step_matrix).norm(), 0.0);
+}
+
 TEST_CASE("Builder build_setup evaluates force at configured coordinates") {
     Builder builder;
     builder.set_alpha(1.5)
-           .set_num_intervals(4)
-           .set_length(8.0)
-           .set_dt(0.01)
-           .set_zero_distance(4.0)
-           .set_force([](const double x) { return 2.0 * x; });
+            .set_num_intervals(4)
+            .set_length(8.0)
+            .set_dt(0.01)
+            .set_zero_distance(4.0)
+            .set_force([](const double x) { return 2.0 * x; });
 
     const Setup setup = builder.build_setup();
 
@@ -123,18 +149,18 @@ TEST_CASE("Builder build_setup evaluates force at configured coordinates") {
     CHECK_UNARY(static_cast<bool>(setup.config.force_input.force_function));
     REQUIRE(std::holds_alternative<std::vector<double>>(setup.force_variant));
     CHECK_EQ(std::get<std::vector<double>>(setup.force_variant),
-                (std::vector<double>{-8.0, -4.0, 0.0, 4.0, 8.0}));
+             (std::vector<double>{-8.0, -4.0, 0.0, 4.0, 8.0}));
 }
 
 TEST_CASE("Builder basic construction") {
     Builder builder;
     builder.set_num_intervals(10)
-           .set_alpha(1.0)
-           .set_beta(0.0)
-           .set_sigma(1.0)
-           .set_length(10.0)
-           .set_dt(0.001)
-           .set_theta(0.5);
+            .set_alpha(1.0)
+            .set_beta(0.0)
+            .set_sigma(1.0)
+            .set_length(10.0)
+            .set_dt(0.001)
+            .set_theta(0.5);
 }
 
 TEST_CASE("Builder validate_parameters") {

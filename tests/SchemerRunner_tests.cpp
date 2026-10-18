@@ -8,12 +8,12 @@ using namespace Schemer;
 
 static Setup make_setup() {
     return Builder()
-        .set_alpha(1.5)
-        .set_num_intervals(4)
-        .set_length(4.0)
-        .set_dt(0.01)
-        .set_log_interval_percent(0.0)
-        .build_setup();
+            .set_alpha(1.5)
+            .set_num_intervals(4)
+            .set_length(4.0)
+            .set_dt(0.01)
+            .set_log_interval_percent(0.0)
+            .build_setup();
 }
 
 TEST_CASE("Runner execution and state updates") {
@@ -27,9 +27,9 @@ TEST_CASE("Runner execution and state updates") {
 
     SUBCASE("Advancing simulation steps") {
         Eigen::VectorXd initial_values = runner.get_values();
-        
+
         CHECK_NOTHROW(runner.run(5));
-        
+
         CHECK_FALSE(runner.get_values().isApprox(initial_values));
     }
 
@@ -62,7 +62,7 @@ TEST_CASE("Runner history and file output") {
 
     SUBCASE("Saving result to disk") {
         std::string test_filepath = "test_output.dat";
-        
+
         runner.run(3);
         CHECK_NOTHROW(runner.save_result(test_filepath));
 

@@ -32,7 +32,8 @@ namespace Schemer {
          */
         explicit FractionalScheme(const Config &config);
 
-        /**     * @brief Builds the main spatial diffusion matrix.
+        /**
+         * @brief Builds the main spatial diffusion matrix.
          *
          * Calls build_M1(), build_M2(), or build_M3() depending on the value of \alpha.
          *
@@ -125,7 +126,14 @@ namespace Schemer {
          * @param force Force value at each grid point.
          * @return Eigen::MatrixXd Variable force matrix.
          */
-        Eigen::MatrixXd build_force(const std::vector<double> &force) const;
+        Eigen::MatrixXd build_force_secondordercentered(const std::vector<double> &force) const;
+
+        /**
+         * @brief Builds the force matrix for a variable force across grid points using more stable scheme.
+         * @param force Force value at each grid point.
+         * @return Eigen::MatrixXd Variable force matrix.
+         */
+        Eigen::MatrixXd build_force_firstorderupwind(const std::vector<double> &force) const;
     };
 
     inline FractionalScheme::FractionalScheme(const Config &config) : config(config) {
@@ -225,33 +233,43 @@ namespace Schemer {
         return ni * V;
     }
 
-    inline Eigen::MatrixXd FractionalScheme::build_force(const std::vector<double> &force) const {
+    inline Eigen::MatrixXd FractionalScheme::build_force_secondordercentered(const std::vector<double> &force) const {
         const Eigen::Index grid_size = config.get_size();
+        const double dx = config.get_dx();
         Eigen::MatrixXd V = Eigen::MatrixXd::Zero(grid_size, grid_size);
 
         for (Eigen::Index i = 0; i < grid_size; i++) {
-            const double f_i = force[i];
-
-            if (f_i >= 0.0) {
-                V(i, i) += 3.0 * f_i;
-                if (i >= 1) {
-                    V(i, i - 1) -= 4.0 * f_i;
-                }
-                if (i >= 2) {
-                    V(i, i - 2) += 1.0 * f_i;
-                }
-            } else {
-                V(i, i) -= 3.0 * f_i;
-                if (i <= grid_size - 2) {
-                    V(i, i + 1) += 4.0 * f_i;
-                }
-                if (i <= grid_size - 3) {
-                    V(i, i + 2) -= 1.0 * f_i;
-                }
+            if (i > 0) {
+                V(i, i) -= force[i - 1];
+                V(i, i - 1) -= force[i];
+            }
+            if (i < grid_size - 1) {
+                V(i, i) += force[i + 1];
+                V(i, i + 1) += force[i];
             }
         }
-        const double coeff = config.dt / (2.0 * config.get_dx());
-        return coeff * V;
+        V *= config.dt / (2 * config.get_dx());
+        return V;
+    }
+
+    inline Eigen::MatrixXd FractionalScheme::build_force_firstorderupwind(const std::vector<double> &force) const {
+        const Eigen::Index grid_size = config.get_size();
+        Eigen::MatrixXd V = Eigen::MatrixXd::Zero(grid_size, grid_size);
+
+        for (Eigen::Index i = 0; i < grid_size - 1; i++) {
+            double f_half = 0.5 * (force[i] + force[i + 1]);
+
+            if (f_half >= 0) {
+                V(i, i) += f_half;
+                V(i + 1, i) -= f_half;
+            } else {
+                V(i, i + 1) += f_half;
+                V(i + 1, i + 1) -= f_half;
+            }
+        }
+
+        V *= config.dt / config.get_dx();
+        return V;
     }
 
     inline Eigen::MatrixXd FractionalScheme::build_diffusion_matrix() const {
@@ -267,19 +285,29 @@ namespace Schemer {
         if (std::holds_alternative<double>(force_variant)) {
             return build_drift(std::get<double>(force_variant));
         }
-        return build_force(std::get<std::vector<double> >(force_variant));
+
+        const auto force_vector = std::get<std::vector<double> >(force_variant);
+        switch (config.force_scheme) {
+            case ForceSchemeType::SecondOrderCentered:
+                 return build_force_secondordercentered(force_vector);
+            case ForceSchemeType::FirstOrderUpwind:
+                return build_force_firstorderupwind(force_vector);
+
+            default:
+                throw std::logic_error("Unhandled ForceSchemeType enum value");
+        }
     }
 
     inline Eigen::MatrixXd FractionalScheme::build_reset_matrix(const Eigen::Index reset_index) const {
         const Eigen::Index grid_size = config.get_size();
         const double reset_rate = config.reset_input.rate * config.dt;
 
-        Eigen::MatrixXd reset_matrix = -reset_rate * Eigen::MatrixXd::Identity(grid_size, grid_size);
+        Eigen::MatrixXd reset_matrix = reset_rate * Eigen::MatrixXd::Identity(grid_size, grid_size);
         for (Eigen::Index i = 0; i < grid_size; ++i) {
-            reset_matrix(reset_index, i) += reset_rate;
+            reset_matrix(reset_index, i) -= reset_rate;
         }
 
-        return -1 * reset_matrix;
+        return reset_matrix;
     }
 
     inline Eigen::MatrixXd FractionalScheme::build_step_matrix(

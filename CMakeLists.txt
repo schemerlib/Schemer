@@ -38,7 +38,7 @@ set(BUILD_TESTING ${_BUILD_TESTING_SAVED})
 
 target_link_libraries(Schemer INTERFACE Eigen3::Eigen)
 
-if(BUILD_TESTING)
+if (BUILD_TESTING)
     enable_testing()
     add_subdirectory(tests)
-endif()
+endif ()

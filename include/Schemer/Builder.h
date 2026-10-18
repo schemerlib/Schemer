@@ -65,6 +65,14 @@ namespace Schemer {
 
     public:
         /**
+          * @brief getter for config
+          * @return Config Inner config struct with current parameters.
+          */
+        Config get_config() const {
+            return inner_config;
+        }
+
+        /**
          * @brief Sets stability parameter \alpha \in (0, 2].
          * @param value Parameter value (\alpha = 2.0 gives standard Gaussian diffusion).
          * @return SchemerBuilder& Reference to this builder for chaining.
@@ -149,6 +157,16 @@ namespace Schemer {
             inner_config.force_input.force_function = std::move(value);
             inner_config.force_input.type = ForceInput::Type::Function;
             inner_config.force_input.force_vector.clear();
+            return *this;
+        }
+
+        /**
+         * @brief Sets the force scheme to be used for building the force matrix.
+         * @param value Force scheme type.
+         * @return SchemerBuilder& Reference to this builder for chaining.
+         */
+        Builder &set_force_scheme(const ForceSchemeType value) {
+            inner_config.force_scheme = value;
             return *this;
         }
 

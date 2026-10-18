@@ -3,7 +3,10 @@
 #include <Schemer/Schemer.h>
 using namespace Schemer;
 
-TEST_CASE("Config default values") {
+TEST_CASE (
+"Config default values"
+)
+ {
     const Config config;
 
     CHECK_EQ(config.alpha, 0.0);
@@ -16,6 +19,7 @@ TEST_CASE("Config default values") {
     CHECK_EQ(config.verbose, 1);
     CHECK_EQ(config.log_interval_percent, 5.0);
     CHECK_EQ(config.delimiter, "\t");
+    CHECK_EQ(config.force_scheme, ForceSchemeType::FirstOrderUpwind);
 
     CHECK_EQ(config.zero_input.type, ZeroInput::Type::Middle);
     CHECK_EQ(config.zero_input.index, -1);
@@ -31,7 +35,10 @@ TEST_CASE("Config default values") {
     CHECK_EQ(config.reset_input.rate, 0.0);
 }
 
-TEST_CASE("Config grid helpers") {
+TEST_CASE (
+"Config grid helpers"
+)
+ {
     Config config;
     config.length = 12.0;
     config.num_intervals = 4;

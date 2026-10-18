@@ -29,6 +29,7 @@ A modern, high-performance, C++ library.
 ## Requirements
 
 To build and use this library, you need:
+
 - A C++20 compatible compiler (GCC 9+, Clang 10+, MSVC 2019+)
 - CMake 3.21 or higher
 
@@ -88,7 +89,8 @@ int main() {
 
 ## Documentation
 
-Full documentation, API reference, and advanced tutorials can be found at [https://Kacper-Jakubiak.github.io/Schemer](https://Kacper-Jakubiak.github.io/Schemer).
+Full documentation, API reference, and advanced tutorials can be found
+at [https://Kacper-Jakubiak.github.io/Schemer](https://Kacper-Jakubiak.github.io/Schemer).
 
 ---
 
