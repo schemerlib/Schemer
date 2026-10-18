@@ -207,53 +207,53 @@ inline Eigen::MatrixXd FractionalScheme::build_M3() const {
     return M;
 }
 
-    inline Eigen::MatrixXd FractionalScheme::build_drift(const double mi) const {
+inline Eigen::MatrixXd FractionalScheme::build_drift(const double mi) const {
     const Eigen::Index grid_size = config.get_size();
     const double dx = config.get_dx();
     Eigen::MatrixXd V = Eigen::MatrixXd::Zero(grid_size, grid_size);
-
-    const double coeff = mi * config.dt / dx;
-
     for (Eigen::Index i = 0; i < grid_size; i++) {
-        if (mi >= 0) {
-            V(i, i) = 1.0;
-            if (i > 0) {
-                V(i, i - 1) = -1.0;
-            }
-        } else {
-            V(i, i) = -1.0;
-            if (i < grid_size - 1) {
-                V(i, i + 1) = 1.0;
-            }
-        }
+        V(i, i) = 3.0;
+        if (i >= 1)
+            V(i, i - 1) = -4.0;
+        if (i >= 2)
+            V(i, i - 2) = 1.0;
     }
 
-    return coeff * V;
+    const double ni = mi * config.dt / (2.0 * dx);
+
+    if (mi < 0)
+        return -1.0 * ni * V.transpose();
+    return ni * V;
 }
 
-    inline Eigen::MatrixXd FractionalScheme::build_force(const std::vector<double> &force) const {
+inline Eigen::MatrixXd FractionalScheme::build_force(const std::vector<double> &force) const {
     const Eigen::Index grid_size = config.get_size();
     const double dx = config.get_dx();
     Eigen::MatrixXd V = Eigen::MatrixXd::Zero(grid_size, grid_size);
-    const double coeff = config.dt / dx;
 
-    // Conservative finite-volume upwind flux loop over cell interfaces (i + 1/2)
-    for (Eigen::Index i = 0; i < grid_size - 1; i++) {
-        // Average force at the interface between cell i and cell i+1
-        double f_half = 0.5 * (force[i] + force[i + 1]);
+    const double eps = 0.2;
 
-        if (f_half >= 0) {
-            // Flow goes from left to right (upstream is cell i)
-            V(i, i) += f_half;         // Flux leaves cell i
-            V(i + 1, i) -= f_half;     // Flux enters cell i+1
-        } else {
-            // Flow goes from right to left (upstream is cell i+1)
-            V(i, i + 1) += f_half;     // Flux enters cell i (f_half is negative)
-            V(i + 1, i + 1) -= f_half; // Flux leaves cell i+1
+    for (Eigen::Index i = 0; i < grid_size; i++) {
+        // 1. Your original second-order central difference advection terms
+        if (i > 0) {
+            V(i, i) -= force[i - 1];
+            V(i, i - 1) -= force[i];
+        }
+        if (i < grid_size - 1) {
+            V(i, i) += force[i + 1];
+            V(i, i + 1) += force[i];
+        }
+
+        if (i > 0 && i < grid_size - 1) {
+            const double damping = eps * std::abs(force[i]);
+            V(i, i - 1) -= damping;
+            V(i, i)     += 2.0 * damping;
+            V(i, i + 1) -= damping;
         }
     }
 
-    return coeff * V;
+    V *= config.dt / (2 * dx);
+    return V;
 }
 
 inline Eigen::MatrixXd FractionalScheme::build_diffusion_matrix() const {
