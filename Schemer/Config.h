@@ -174,6 +174,11 @@ namespace Schemer {
         double log_interval_percent = 5.0;
 
         /**
+         * @brief File path used for writing progress log messages.
+         */
+        std::string log_file_path = "schemer_progress.log";
+
+        /**
          * @brief Column separator for output files.
          *
          * The string sequence used between data columns when saving results.

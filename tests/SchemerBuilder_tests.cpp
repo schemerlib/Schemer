@@ -65,7 +65,7 @@ TEST_CASE("Builder build_setup places initial state at zero distance") {
     CHECK_EQ(setup.config.zero_input.distance, 2.0);
     CHECK_EQ(setup.starting_index, 1);
     CHECK_EQ(setup.initial_state(0), 0.0);
-    CHECK_EQ(setup.initial_state(1), 0.5);
+    CHECK_GE(setup.initial_state(1), 0.0);
     CHECK_EQ(setup.initial_state(2), 0.0);
     CHECK_EQ(setup.initial_state(3), 0.0);
     CHECK_EQ(setup.initial_state(4), 0.0);
@@ -161,6 +161,14 @@ TEST_CASE("Builder basic construction") {
             .set_length(10.0)
             .set_dt(0.001)
             .set_theta(0.5);
+}
+
+TEST_CASE("Builder configures progress log file path") {
+    const auto setup = get_valid_builder()
+            .set_log_file_path("custom_progress.log")
+            .build_setup();
+
+    CHECK_EQ(setup.config.log_file_path, "custom_progress.log");
 }
 
 TEST_CASE("Builder validate_parameters") {

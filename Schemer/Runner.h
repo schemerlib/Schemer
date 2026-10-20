@@ -5,7 +5,6 @@
 
 #pragma once
 
-#include <algorithm>
 #include <chrono>
 #include <ctime>
 #include <fstream>
@@ -14,8 +13,8 @@
 #include <ostream>
 #include <stdexcept>
 #include <string>
-#include <string_view>
 #include <utility>
+#include <vector>
 #include "Setup.h"
 
 namespace Schemer {
@@ -28,9 +27,6 @@ namespace Schemer {
      */
     class Runner {
     private:
-        /// File path used for writing progress log messages.
-        static constexpr std::string_view LOG_FILE_PATH = "progress.log";
-
         /// Setup used to create this simulation.
         Setup setup;
 
@@ -113,6 +109,14 @@ namespace Schemer {
          * @return Eigen::VectorXd Copy of current state values.
          */
         Eigen::VectorXd get_values() const { return current_values; }
+
+        /**
+        * @brief Gets a copy of the current grid values vector as a std::vector.
+        * @return std::vector<double> Copy of current state values as std::vector.
+        */
+        std::vector<double> get_values_vector() const {
+            return std::vector<double>(current_values.data(), current_values.data() + current_values.size());
+        }
     };
 
     inline void Runner::log(std::ostream &os, const double progress_percent) {
@@ -140,6 +144,7 @@ namespace Schemer {
 
         os << '#' << "delimiter: " << config.delimiter << '\n';
         os << '#' << "log_interval_percent: " << config.log_interval_percent << '\n';
+        os << '#' << "log_file_path: " << config.log_file_path << '\n';
         os << '#' << "verbose: " << config.verbose << '\n';
 
         os << '#' << "initial_values: ";
@@ -190,14 +195,17 @@ namespace Schemer {
         std::ofstream log_stream;
         bool should_log_progress = setup.config.log_interval_percent > 0;
         if (should_log_progress) {
-            log_stream.open(LOG_FILE_PATH.data());
+            log_stream.open(setup.config.log_file_path);
             if (!log_stream) {
-                std::cerr << "[WARNING] Failed opening log file " + std::string(LOG_FILE_PATH) <<
+                std::cerr << "[WARNING] Failed opening log file " + setup.config.log_file_path <<
                         "logs will not be saved";
                 should_log_progress = false;
             }
         }
-        const int log_interval = std::max(1, static_cast<int>(steps * setup.config.log_interval_percent / 100.0));
+        int log_interval = static_cast<int>(steps * setup.config.log_interval_percent / 100.0);
+        if (log_interval <= 0) {
+            log_interval = 1;
+        }
 
         for (int step = 0; step < steps; step++) {
             if (should_log_progress && step % log_interval == 0)

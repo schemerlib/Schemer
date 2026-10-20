@@ -18,6 +18,7 @@ TEST_CASE (
     CHECK_EQ(config.theta, 0.5);
     CHECK_EQ(config.verbose, 1);
     CHECK_EQ(config.log_interval_percent, 5.0);
+    CHECK_EQ(config.log_file_path, "schemer_progress.log");
     CHECK_EQ(config.delimiter, "\t");
     CHECK_EQ(config.force_scheme, ForceSchemeType::FirstOrderUpwind);
 

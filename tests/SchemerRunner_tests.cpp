@@ -74,6 +74,25 @@ TEST_CASE("Runner history and file output") {
     }
 }
 
+TEST_CASE("Runner writes progress to configured log file") {
+    const std::string log_filepath = "test_progress.log";
+    Runner runner(Builder()
+            .set_alpha(1.5)
+            .set_num_intervals(4)
+            .set_length(4.0)
+            .set_dt(0.01)
+            .set_log_interval_percent(100.0)
+            .set_log_file_path(log_filepath)
+            .build_setup());
+
+    runner.run(1);
+
+    std::ifstream file(log_filepath);
+    CHECK(file.is_open());
+    file.close();
+    std::remove(log_filepath.c_str());
+}
+
 TEST_CASE("Runner copy and move semantics") {
     Setup setup = make_setup();
     Runner runner1(setup);

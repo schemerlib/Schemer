@@ -231,6 +231,16 @@ namespace Schemer {
         }
 
         /**
+         * @brief Sets the file path used for progress log messages.
+         * @param value Path to the progress log file.
+         * @return SchemerBuilder& Reference to this builder for chaining.
+         */
+        Builder &set_log_file_path(std::string value) {
+            inner_config.log_file_path = std::move(value);
+            return *this;
+        }
+
+        /**
          * @brief Sets initial state values using an Eigen vector.
          * @param value Vector holding initial values for all grid points.
          * @return SchemerBuilder& Reference to this builder for chaining.
