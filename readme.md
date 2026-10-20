@@ -74,7 +74,7 @@ link. Pass the directory containing `Schemer/` and the directory containing
 
 ```sh
 g++ -std=c++20 \
-    -I/path/to/Schemer/include \
+    -I/path/to/Schemer \
     -I/path/to/eigen-3.4.0 \
     your_source.cpp -o your_program
 ```
@@ -123,8 +123,8 @@ interval to `0.0` to disable it.
 - `set_theta()` selects the time-stepping scheme; `0.0` is explicit, `0.5` is
   semi-implicit, and `1.0` is implicit.
 
-See the public headers for the complete API: [Builder](include/Schemer/Builder.h),
-[Runner](include/Schemer/Runner.h), and [configuration types](include/Schemer/Config.h).
+See the public headers for the complete API: [Builder](Schemer/Builder.h),
+[Runner](Schemer/Runner.h), and [configuration types](Schemer/Config.h).
 
 ## Building and running tests
 

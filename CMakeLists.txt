@@ -6,17 +6,17 @@ option(BUILD_TESTING "Build the testing tree for Schemer" ${PROJECT_IS_TOP_LEVEL
 add_library(Schemer INTERFACE)
 
 target_include_directories(Schemer INTERFACE
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-        $<INSTALL_INTERFACE:include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+        $<INSTALL_INTERFACE:.>
 )
 
 target_sources(Schemer INTERFACE
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/Schemer/Schemer.h>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/Schemer/Builder.h>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/Schemer/Runner.h>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/Schemer/FractionalScheme.h>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/Schemer/Setup.h>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/Schemer/Config.h>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Schemer/Schemer.h>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Schemer/Builder.h>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Schemer/Runner.h>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Schemer/FractionalScheme.h>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Schemer/Setup.h>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Schemer/Config.h>
 )
 
 target_compile_features(Schemer INTERFACE cxx_std_20)
