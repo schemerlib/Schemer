@@ -81,16 +81,33 @@ namespace Schemer {
         }
 
         /**
-         * @brief Advances the simulation forward by a specified number of time steps.
+         * @brief Advances the simulation forward by a specified number of time steps with option to save history.
          *
          * Steps through time, updates current grid values, logs progress, and
          * optionally writes history states to a stream at specified step intervals.
          *
          * @param steps Total number of time steps to run.
          * @param history_stream Optional output stream for saving history data (pass nullptr to skip).
-         * @param save_every How often to save state history in steps (set to 0 to skip saving).
+         * @param history_save_interval How often to save state history in steps (set to 0 to skip saving).
          */
-        void run(int steps, std::ostream *history_stream = nullptr, int save_every = 0);
+        void run(int steps, std::ostream &history_stream, int history_save_interval);
+
+        /**
+         * @brief Advances the simulation forward by a specified number of time steps.
+         *
+         * Steps through time, updates current grid values, logs progress.
+         *
+         * @param steps Total number of time steps to run.
+         */
+        void run(const int steps) {
+            run(steps, std::cerr, 0);
+        }
+
+        /**
+         * @brief Saves the current simulation state and settings to a stream.
+         * @param out_stream Stream to write the output to.
+         */
+        void save_result(std::ostream &out_stream) const;
 
         /**
          * @brief Saves the current simulation state and settings to a file.
@@ -168,28 +185,30 @@ namespace Schemer {
         for (const double position: coords) {
             os << position << config.delimiter;
         }
-        os << std::endl;
+        os << '\n';
     }
 
     inline void Runner::save_current_values(std::ostream &os) const {
         const auto &delimiter = setup.config.delimiter;
         for (Eigen::Index i = 0; i < current_values.size(); i++)
             os << current_values(i) << delimiter;
-        os << std::endl;
+        os << "\n";
     }
 
-    inline void Runner::run(const int steps, std::ostream *history_stream, const int save_every) {
+    inline void Runner::run(const int steps, std::ostream &history_stream, const int history_save_interval) {
         if (steps < 0)
             throw std::invalid_argument("amount of steps cannot be negative");
-        if (save_every < 0)
-            throw std::invalid_argument("save_every cannot be negative");
-        if (save_every > 0 && history_stream == nullptr)
-            std::cerr << "[WARNING] history_stream not provided, history will not be saved";
+        if (history_save_interval < 0)
+            throw std::invalid_argument("history_save_interval cannot be negative");
+        if (history_save_interval > 0 && history_stream.fail())
+            std::cerr << "[WARNING] history_stream not provided, history will not be saved\n";
+        if (history_save_interval == 0 && setup.config.verbose > 1)
+            std::cout << "history_save_interval is set to 0, history will not be saved\n";
 
-        const bool should_log_history = history_stream != nullptr && save_every > 0;
+        const bool should_log_history = history_stream && history_save_interval > 0;
         if (should_log_history) {
-            if (history_stream->tellp() <= 0)
-                save_parameters(*history_stream);
+            if (history_stream.tellp() <= 0)
+                save_parameters(history_stream);
         }
 
         std::ofstream log_stream;
@@ -198,10 +217,11 @@ namespace Schemer {
             log_stream.open(setup.config.log_file_path);
             if (!log_stream) {
                 std::cerr << "[WARNING] Failed opening log file " + setup.config.log_file_path <<
-                        "logs will not be saved";
+                        "logs will not be saved\n";
                 should_log_progress = false;
             }
         }
+
         int log_interval = static_cast<int>(steps * setup.config.log_interval_percent / 100.0);
         if (log_interval <= 0) {
             log_interval = 1;
@@ -211,18 +231,34 @@ namespace Schemer {
             if (should_log_progress && step % log_interval == 0)
                 log(log_stream, 100.0 * step / steps);
 
-            if (should_log_history && step % save_every == 0)
-                save_current_values(*history_stream);
+            if (should_log_history && step % history_save_interval == 0) {
+                save_current_values(history_stream);
+                history_stream.flush();
+            }
 
             current_values = setup.step_matrix * current_values;
             steps_taken++;
         }
 
         if (should_log_history)
-            save_current_values(*history_stream);
+            save_current_values(history_stream);
 
         if (should_log_progress)
             log(log_stream, 100.0);
+
+        if (log_stream.is_open())
+            log_stream.close();
+    }
+
+    inline void Runner::save_result(std::ostream &out_stream) const {
+        if (!out_stream) {
+            throw std::runtime_error("Invalid output stream");
+        }
+        save_parameters(out_stream);
+        out_stream << '#' << "steps: " << steps_taken << '\n';
+        save_current_values(out_stream);
+        if (setup.config.verbose > 0)
+            std::cout << "Saved to the given stream" << '\n';
     }
 
     inline void Runner::save_result(const std::string &filepath) const {
@@ -231,9 +267,12 @@ namespace Schemer {
             throw std::runtime_error("Failed to open save file: " + filepath);
         }
         save_parameters(out_stream);
-        out_stream << '#' << "steps: " << steps_taken << std::endl;
+        out_stream << '#' << "steps: " << steps_taken << '\n';
         save_current_values(out_stream);
         if (setup.config.verbose > 0)
-            std::cout << "Saved to " << filepath << std::endl;
+            std::cout << "Saved to " << filepath << '\n';
+
+        if (out_stream.is_open())
+            out_stream.close();
     }
 } // namespace Schemer
