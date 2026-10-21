@@ -10,6 +10,7 @@
 #include "FractionalScheme.h"
 #include <Eigen/Dense>
 #include <functional>
+#include <utility>
 #include <vector>
 #include <variant>
 #include <string>
@@ -65,17 +66,27 @@ namespace Schemer {
 
     public:
         /**
-          * @brief getter for config
-          * @return Config Inner config struct with current parameters.
-          */
+        * @brief getter for config
+        * @return Config Inner config struct with current parameters.
+        */
         Config get_config() const {
             return inner_config;
         }
 
         /**
+        - @brief Sets the full configuration object.
+        - @param config Config object containing all simulation parameters.
+        - @return Builder& Reference to this builder for chaining.
+        */
+        Builder &set_config(Config config) {
+            inner_config = std::move(config);
+            return *this;
+        }
+
+        /**
          * @brief Sets stability parameter \alpha \in (0, 2].
          * @param value Parameter value (\alpha = 2.0 gives standard Gaussian diffusion).
-         * @return SchemerBuilder& Reference to this builder for chaining.
+         * @return Builder& Reference to this builder for chaining.
          */
         Builder &set_alpha(double value) {
             inner_config.alpha = value;
@@ -85,7 +96,7 @@ namespace Schemer {
         /**
          * @brief Sets skewness parameter \beta \in [-1, 1].
          * @param value Parameter value (0 gives symmetric spread, negative leans left, positive leans right).
-         * @return SchemerBuilder& Reference to this builder for chaining.
+         * @return Builder& Reference to this builder for chaining.
          */
         Builder &set_beta(double value) {
             inner_config.beta = value;
@@ -95,7 +106,7 @@ namespace Schemer {
         /**
          * @brief Sets scale parameter \sigma > 0.
          * @param value Spread/dispersion factor of the diffusion profile.
-         * @return SchemerBuilder& Reference to this builder for chaining.
+         * @return Builder& Reference to this builder for chaining.
          */
         Builder &set_sigma(double value) {
             inner_config.sigma = value;
@@ -105,7 +116,7 @@ namespace Schemer {
         /**
          * @brief Sets physical length of 1D spatial domain (L).
          * @param value Total domain length in simulation units.
-         * @return SchemerBuilder& Reference to this builder for chaining.
+         * @return Builder& Reference to this builder for chaining.
          */
         Builder &set_length(double value) {
             inner_config.length = value;
@@ -115,7 +126,7 @@ namespace Schemer {
         /**
          * @brief Applies a constant, uniform external force across the domain.
          * @param value Constant force value.
-         * @return SchemerBuilder& Reference to this builder for chaining.
+         * @return Builder& Reference to this builder for chaining.
          */
         Builder &set_drift(double value) {
             if (inner_config.force_input.type != ForceInput::Type::Drift) {
@@ -131,7 +142,7 @@ namespace Schemer {
         /**
          * @brief Applies custom force values provided at each grid point.
          * @param value List containing force values for all grid points.
-         * @return SchemerBuilder& Reference to this builder for chaining.
+         * @return Builder& Reference to this builder for chaining.
          */
         Builder &set_force(std::vector<double> value) {
             if (inner_config.force_input.type == ForceInput::Type::Drift && inner_config.force_input.drift_value !=
@@ -147,7 +158,7 @@ namespace Schemer {
         /**
          * @brief Applies position-dependent force using a mathematical function f(x).
          * @param value Function taking spatial position x and returning local force.
-         * @return SchemerBuilder& Reference to this builder for chaining.
+         * @return Builder& Reference to this builder for chaining.
          */
         Builder &set_force(std::function<double(double)> value) {
             if (inner_config.force_input.type == ForceInput::Type::Drift && inner_config.force_input.drift_value !=
@@ -163,7 +174,7 @@ namespace Schemer {
         /**
          * @brief Sets the force scheme to be used for building the force matrix.
          * @param value Force scheme type.
-         * @return SchemerBuilder& Reference to this builder for chaining.
+         * @return Builder& Reference to this builder for chaining.
          */
         Builder &set_force_scheme(const ForceSchemeType value) {
             inner_config.force_scheme = value;
@@ -173,7 +184,7 @@ namespace Schemer {
         /**
          * @brief Sets time step size (\Delta t).
          * @param value Duration of a single step forward in time.
-         * @return SchemerBuilder& Reference to this builder for chaining.
+         * @return Builder& Reference to this builder for chaining.
          */
         Builder &set_dt(double value) {
             inner_config.dt = value;
@@ -183,7 +194,7 @@ namespace Schemer {
         /**
          * @brief Sets the total number of grid intervals (N).
          * @param value Number of segments (creates N + 1 total grid points).
-         * @return SchemerBuilder& Reference to this builder for chaining.
+         * @return Builder& Reference to this builder for chaining.
          */
         Builder &set_num_intervals(Eigen::Index value) {
             inner_config.num_intervals = value;
@@ -193,7 +204,7 @@ namespace Schemer {
         /**
          * @brief Sets time integration scheme parameter \theta.
          * @param value Value weighting scheme (0.0 explicit, 0.5 semi-implicit, 1.0 implicit).
-         * @return SchemerBuilder& Reference to this builder for chaining.
+         * @return Builder& Reference to this builder for chaining.
          */
         Builder &set_theta(double value) {
             inner_config.theta = value;
@@ -203,7 +214,7 @@ namespace Schemer {
         /**
          * @brief Sets detail level for terminal logging output.
          * @param value Verbosity level for built objects.
-         * @return SchemerBuilder& Reference to this builder for chaining.
+         * @return Builder& Reference to this builder for chaining.
          */
         Builder &set_verbosity(int value) {
             inner_config.verbose = value;
@@ -213,7 +224,7 @@ namespace Schemer {
         /**
          * @brief Sets column delimiter string used when saving output data.
          * @param value Delimiter sequence (e.g., tab or comma).
-         * @return SchemerBuilder& Reference to this builder for chaining.
+         * @return Builder& Reference to this builder for chaining.
          */
         Builder &set_delimiter(std::string value) {
             inner_config.delimiter = std::move(value);
@@ -223,7 +234,7 @@ namespace Schemer {
         /**
          * @brief Sets completion progress percentage required between log updates.
          * @param value Progress update threshold percentage (%).
-         * @return SchemerBuilder& Reference to this builder for chaining.
+         * @return Builder& Reference to this builder for chaining.
          */
         Builder &set_log_interval_percent(double value) {
             inner_config.log_interval_percent = value;
@@ -233,7 +244,7 @@ namespace Schemer {
         /**
          * @brief Sets the file path used for progress log messages.
          * @param value Path to the progress log file.
-         * @return SchemerBuilder& Reference to this builder for chaining.
+         * @return Builder& Reference to this builder for chaining.
          */
         Builder &set_log_file_path(std::string value) {
             inner_config.log_file_path = std::move(value);
@@ -241,12 +252,12 @@ namespace Schemer {
         }
 
         /**
-         * @brief Sets initial state values using an Eigen vector.
-         * @param value Vector holding initial values for all grid points.
-         * @return SchemerBuilder& Reference to this builder for chaining.
-         */
-        Builder &set_initial_conditions(const Eigen::VectorXd &value) {
-            inner_config.values_input.vector = value;
+        * @brief Sets initial state values using an Eigen vector.
+        * @param value Vector holding initial values for all grid points.
+        * @return Builder& Reference to this builder for chaining.
+        */
+        Builder &set_initial_conditions(Eigen::VectorXd value) {
+            inner_config.values_input.vector = std::move(value);
             inner_config.values_input.type = ValuesInput::Type::Vector;
             return *this;
         }
@@ -254,7 +265,7 @@ namespace Schemer {
         /**
          * @brief Sets initial state values using a standard vector.
          * @param value List holding initial values for all grid points.
-         * @return SchemerBuilder& Reference to this builder for chaining.
+         * @return Builder& Reference to this builder for chaining.
          */
         Builder &set_initial_conditions(const std::vector<double> &value) {
             inner_config.values_input.vector = Eigen::VectorXd::Map(value.data(),
@@ -266,7 +277,7 @@ namespace Schemer {
         /**
          * @brief Places origin x = 0.0 at a specific grid point index.
          * @param value Grid index representing position x = 0.0.
-         * @return SchemerBuilder& Reference to this builder for chaining.
+         * @return Builder& Reference to this builder for chaining.
          */
         Builder &set_zero_index(Eigen::Index value) {
             inner_config.zero_input.index = value;
@@ -277,7 +288,7 @@ namespace Schemer {
         /**
          * @brief Places origin x = 0.0 at a physical distance from the left boundary.
          * @param value Distance value in length units from the left edge.
-         * @return SchemerBuilder& Reference to this builder for chaining.
+         * @return Builder& Reference to this builder for chaining.
          */
         Builder &set_zero_distance(double value) {
             inner_config.zero_input.distance = value;
@@ -287,7 +298,7 @@ namespace Schemer {
 
         /**
          * @brief Places origin x = 0.0 at an exact center of domain.
-         * @return SchemerBuilder& Reference to this builder for chaining.
+         * @return Builder& Reference to this builder for chaining.
          */
         Builder &set_zero_middle() {
             inner_config.zero_input.type = ZeroInput::Type::Middle;
@@ -296,7 +307,7 @@ namespace Schemer {
 
         /**
          * @brief Sets the probability reset target to the spatial origin (x = 0.0).
-         * @return SchemerBuilder& Reference to this builder for chaining.
+         * @return Builder& Reference to this builder for chaining.
          */
         Builder &set_reset_index_zero() {
             inner_config.reset_input.type = ResetInput::Type::Zero;
@@ -306,7 +317,7 @@ namespace Schemer {
         /**
          * @brief Sets the probability reset target to a specific grid point index.
          * @param value Grid index for the reset target.
-         * @return SchemerBuilder& Reference to this builder for chaining.
+         * @return Builder& Reference to this builder for chaining.
          */
         Builder &set_reset_index(Eigen::Index value) {
             inner_config.reset_input.index = value;
@@ -317,7 +328,7 @@ namespace Schemer {
         /**
          * @brief Sets the rate of probability siphoning for stochastic resetting.
          * @param value Reset rate value.
-         * @return SchemerBuilder& Reference to this builder for chaining.
+         * @return Builder& Reference to this builder for chaining.
          */
         Builder &set_reset_rate(double value) {
             inner_config.reset_input.rate = value;
@@ -326,7 +337,7 @@ namespace Schemer {
 
         /**
          * @brief Builds and returns a fully configured simulation runner ready to execute.
-         * @return SchemerRunner Ready-to-run simulation solver object.
+         * @return Runner Ready-to-run simulation solver object.
          */
         Runner build() const {
             return Runner(build_setup());
@@ -334,7 +345,7 @@ namespace Schemer {
 
         /**
          * @brief Prepares and returns a complete simulation setup structure.
-         * @return SimulationSetup Prepared setup with configuration, matrices, and initial states.
+         * @return Setup Prepared setup with configuration, matrices, and initial states.
          */
         Setup build_setup() const;
     };

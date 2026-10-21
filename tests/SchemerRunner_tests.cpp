@@ -16,7 +16,10 @@ static Setup make_setup() {
             .build_setup();
 }
 
-TEST_CASE("Runner execution and state updates") {
+TEST_CASE (
+"Runner execution and state updates"
+)
+ {
     Setup setup = make_setup();
     Runner runner(setup);
 
@@ -46,7 +49,10 @@ TEST_CASE("Runner execution and state updates") {
     }
 }
 
-TEST_CASE("Runner history and file output") {
+TEST_CASE (
+"Runner history and file output"
+)
+ {
     Setup setup = make_setup();
     Runner runner(setup);
 
@@ -74,7 +80,10 @@ TEST_CASE("Runner history and file output") {
     }
 }
 
-TEST_CASE("Runner writes progress to configured log file") {
+TEST_CASE (
+"Runner writes progress to configured log file"
+)
+ {
     const std::string log_filepath = "test_progress.log";
     Runner runner(Builder()
             .set_alpha(1.5)
@@ -93,7 +102,10 @@ TEST_CASE("Runner writes progress to configured log file") {
     std::remove(log_filepath.c_str());
 }
 
-TEST_CASE("Runner copy and move semantics") {
+TEST_CASE (
+"Runner copy and move semantics"
+)
+ {
     Setup setup = make_setup();
     Runner runner1(setup);
     runner1.run(2);

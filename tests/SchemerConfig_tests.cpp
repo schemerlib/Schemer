@@ -3,10 +3,7 @@
 #include <Schemer/Schemer.h>
 using namespace Schemer;
 
-TEST_CASE (
-"Config default values"
-)
- {
+TEST_CASE("Config default values") {
     const Config config;
 
     CHECK_EQ(config.alpha, 0.0);
@@ -36,10 +33,7 @@ TEST_CASE (
     CHECK_EQ(config.reset_input.rate, 0.0);
 }
 
-TEST_CASE (
-"Config grid helpers"
-)
- {
+TEST_CASE("Config grid helpers") {
     Config config;
     config.length = 12.0;
     config.num_intervals = 4;

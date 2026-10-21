@@ -100,7 +100,7 @@ namespace Schemer {
 
         /**
          * @brief Gets a copy of the internal simulation setup.
-         * @return SimulationSetup Copy of the setup configuration and matrices.
+         * @return Setup Copy of the setup configuration and matrices.
          */
         Setup get_setup() const { return setup; }
 
