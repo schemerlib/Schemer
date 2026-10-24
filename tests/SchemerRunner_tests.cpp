@@ -16,7 +16,10 @@ static Setup make_setup() {
             .build_setup();
 }
 
-TEST_CASE("Runner execution and state updates") {
+TEST_CASE (
+"Runner execution and state updates"
+)
+ {
     Setup setup = make_setup();
     Runner runner(setup);
 
@@ -46,14 +49,17 @@ TEST_CASE("Runner execution and state updates") {
     }
 }
 
-TEST_CASE("Runner history and file output") {
+TEST_CASE (
+"Runner history and file output"
+)
+ {
     Setup setup = make_setup();
     Runner runner(setup);
 
     SUBCASE("History streaming output") {
         std::stringstream history_stream;
 
-        runner.run(4, &history_stream, 2);
+        runner.run(4, history_stream, 2);
 
         std::string output = history_stream.str();
         CHECK_FALSE(output.empty());
@@ -74,7 +80,64 @@ TEST_CASE("Runner history and file output") {
     }
 }
 
-TEST_CASE("Runner copy and move semantics") {
+TEST_CASE (
+"Runner creates to configured log file"
+)
+ {
+    const std::string log_filepath = "test_progress.log";
+    Runner runner = Builder()
+            .set_alpha(1.5)
+            .set_num_intervals(4)
+            .set_log_interval_percent(10.0)
+            .set_log_file_path(log_filepath)
+            .build();
+
+    runner.run(100);
+
+    // std::ofstream log_file(log_filepath, std::ios::app);
+    // log_file << "Test progress log file" << std::endl;
+    // log_file.close();
+
+    std::ifstream file(log_filepath);
+
+    CHECK(file.is_open());
+    // std::string line;
+    // std::cout << "[test] Log file opened: " << file.is_open() << std::endl;
+    // std::cout << "[test] Log file path: " << log_filepath << std::endl;
+    // std:: cout << "[test] Log file contents:" << std::endl;
+    // while (std::getline(file, line)) {
+    //     std::cout << line << '\n';
+    // }
+    // std::cout << "[test]" << std::endl;
+
+
+    file.close();
+    std::remove(log_filepath.c_str());
+}
+
+TEST_CASE (
+"Runner does not create the log file at 0 log interval"
+)
+ {
+    const std::string log_filepath = "test_progress.log";
+    Runner runner = Builder()
+            .set_alpha(1.5)
+            .set_num_intervals(4)
+            .set_log_interval_percent(0.0)
+            .set_log_file_path(log_filepath)
+            .build();
+
+    runner.run(100);
+
+    std::ifstream file(log_filepath);
+    CHECK_FALSE(file.is_open());
+    file.close();
+}
+
+TEST_CASE (
+"Runner copy and move semantics"
+)
+ {
     Setup setup = make_setup();
     Runner runner1(setup);
     runner1.run(2);
