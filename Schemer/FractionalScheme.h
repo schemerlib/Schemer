@@ -235,19 +235,25 @@ namespace Schemer {
 
     inline Eigen::MatrixXd FractionalScheme::build_force_secondordercentered(const std::vector<double> &force) const {
         const Eigen::Index grid_size = config.get_size();
-        const double dx = config.get_dx();
         Eigen::MatrixXd V = Eigen::MatrixXd::Zero(grid_size, grid_size);
 
-        for (Eigen::Index i = 0; i < grid_size; i++) {
-            if (i > 0) {
-                V(i, i) -= force[i - 1];
-                V(i, i - 1) -= force[i];
-            }
-            if (i < grid_size - 1) {
-                V(i, i) += force[i + 1];
-                V(i, i + 1) += force[i];
-            }
+        for (Eigen::Index i = 1; i < grid_size - 1; i++) {
+            V(i, i - 1) -= force[i];
+            V(i, i + 1) += force[i];
+            V(i, i) += force[i + 1] - force[i - 1];
         }
+
+        if (grid_size > 1) {
+            V(0, 0) = -force[0];
+            V(0, 1) = force[0];
+        }
+
+        if (grid_size > 1) {
+            Eigen::Index last = grid_size - 1;
+            V(last, last) = force[last];
+            V(last, last - 1) = -force[last];
+        }
+
         V *= config.dt / (2 * config.get_dx());
         return V;
     }
@@ -266,6 +272,17 @@ namespace Schemer {
                 V(i, i + 1) += f_half;
                 V(i + 1, i + 1) -= f_half;
             }
+        }
+
+        double f_left = force[0];
+        if (f_left < 0) {
+            V(0, 0) += f_left;
+        }
+
+        double f_right = force[grid_size - 1];
+        if (f_right > 0) {
+            Eigen::Index last = grid_size - 1;
+            V(last, last) += f_right;
         }
 
         V *= config.dt / config.get_dx();
@@ -289,7 +306,7 @@ namespace Schemer {
         const auto force_vector = std::get<std::vector<double> >(force_variant);
         switch (config.force_scheme) {
             case ForceSchemeType::SecondOrderCentered:
-                 return build_force_secondordercentered(force_vector);
+                return build_force_secondordercentered(force_vector);
             case ForceSchemeType::FirstOrderUpwind:
                 return build_force_firstorderupwind(force_vector);
 

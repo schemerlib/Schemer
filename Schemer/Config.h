@@ -11,7 +11,6 @@
 #include <Eigen/Dense>
 
 namespace Schemer {
-
     /**
      * @struct ForceSchemeType
      * @brief Configuration for the force scheme used for building the force matrix.
@@ -185,6 +184,9 @@ namespace Schemer {
          */
         std::string delimiter = "\t";
 
+        /// Chosen force matrix calculation scheme.
+        ForceSchemeType force_scheme = ForceSchemeType::SecondOrderCentered;
+
         /// Configuration for positioning spatial origin.
         ZeroInput zero_input;
 
@@ -193,9 +195,6 @@ namespace Schemer {
 
         /// Configuration for external forces.
         ForceInput force_input;
-
-        /// Chosen force matrix calculation scheme.
-        ForceSchemeType force_scheme = ForceSchemeType::FirstOrderUpwind;
 
         /// Configuration for reset target location.
         ResetInput reset_input;
