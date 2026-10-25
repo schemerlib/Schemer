@@ -276,7 +276,7 @@ namespace Schemer {
 
         double f_left = force[0];
         if (f_left < 0) {
-            V(0, 0) += f_left;
+            V(0, 0) -= f_left;
         }
 
         double f_right = force[grid_size - 1];
