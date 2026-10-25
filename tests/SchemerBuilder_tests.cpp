@@ -138,12 +138,21 @@ TEST_CASE("Builder applies the configured force scheme") {
             .set_force(force_values)
             .set_force_scheme(ForceSchemeType::FirstOrderUpwind);
 
+    Builder upwind2_builder = get_valid_builder();
+    upwind2_builder
+            .set_force(force_values)
+            .set_force_scheme(ForceSchemeType::SecondOrderUpwind);
+
     const Setup centered_setup = centered_builder.build_setup();
     const Setup upwind_setup = upwind_builder.build_setup();
+    const Setup upwind2_setup = upwind2_builder.build_setup();
 
     CHECK_EQ(centered_setup.config.force_scheme, ForceSchemeType::SecondOrderCentered);
     CHECK_EQ(upwind_setup.config.force_scheme, ForceSchemeType::FirstOrderUpwind);
+    CHECK_EQ(upwind2_setup.config.force_scheme, ForceSchemeType::SecondOrderUpwind);
+
     CHECK_GT((centered_setup.step_matrix - upwind_setup.step_matrix).norm(), 0.0);
+    CHECK_GT((centered_setup.step_matrix - upwind2_setup.step_matrix).norm(), 0.0);
 }
 
 TEST_CASE("Builder configures progress log file path") {

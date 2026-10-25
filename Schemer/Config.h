@@ -17,7 +17,8 @@ namespace Schemer {
      */
     enum class ForceSchemeType {
         SecondOrderCentered,
-        FirstOrderUpwind
+        FirstOrderUpwind,
+        SecondOrderUpwind
     };
 
     /**

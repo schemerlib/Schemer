@@ -122,18 +122,25 @@ namespace Schemer {
         Eigen::MatrixXd build_drift(double mi) const;
 
         /**
-         * @brief Builds the force matrix for a variable force across grid points.
+         * @brief Builds the force matrix for a variable force across grid points using second order centered scheme.
          * @param force Force value at each grid point.
          * @return Eigen::MatrixXd Variable force matrix.
          */
         Eigen::MatrixXd build_force_secondordercentered(const std::vector<double> &force) const;
 
         /**
-         * @brief Builds the force matrix for a variable force across grid points using more stable scheme.
+         * @brief Builds the force matrix for a variable force across grid points using first order upwind scheme.
          * @param force Force value at each grid point.
          * @return Eigen::MatrixXd Variable force matrix.
          */
         Eigen::MatrixXd build_force_firstorderupwind(const std::vector<double> &force) const;
+
+        /**
+         * @brief Builds the force matrix for a variable force across grid points using second order upwind scheme.
+         * @param force Force value at each grid point.
+         * @return Eigen::MatrixXd Variable force matrix.
+         */
+        Eigen::MatrixXd build_force_secondorderupwind(const std::vector<double> &force) const;
     };
 
     inline FractionalScheme::FractionalScheme(const Config &config) : config(config) {
@@ -289,6 +296,52 @@ namespace Schemer {
         return V;
     }
 
+    inline Eigen::MatrixXd FractionalScheme::build_force_secondorderupwind(const std::vector<double> &force) const {
+        const Eigen::Index grid_size = config.get_size();
+        Eigen::MatrixXd V = Eigen::MatrixXd::Zero(grid_size, grid_size);
+
+        for (Eigen::Index i = 0; i < grid_size; ++i) {
+            double ai = force[i]; // Local velocity/force at node i
+
+            if (ai >= 0) {
+                if (i == 0) {
+                    // Left boundary (Inflow): 1st-order fallback
+                    V(i, i) += ai;
+                } else if (i == 1) {
+                    // Near boundary: 1st-order fallback (only 1 upstream node available)
+                    V(i, i)     += ai;
+                    V(i, i - 1) -= ai;
+                } else {
+                    // Full 2nd-order upwind: (3u_i - 4u_{i-1} + u_{i-2}) / (2*dx)
+                    // Multiplying by 0.5 allows us to factor out dt/dx cleanly at the end.
+                    double coeff = 0.5 * ai;
+                    V(i, i)     += coeff * 3.0;
+                    V(i, i - 1) += coeff * (-4.0);
+                    V(i, i - 2) += coeff * 1.0;
+                }
+            } else {
+                // Negative flow (moving right to left)
+                if (i == grid_size - 1) {
+                    // Right boundary (Inflow): 1st-order fallback
+                    V(i, i) -= ai; // Since ai is negative, -ai adds a positive magnitude
+                } else if (i == grid_size - 2) {
+                    // Near boundary: 1st-order fallback (only 1 upstream node available)
+                    V(i, i)     -= ai;
+                    V(i, i + 1) += ai;
+                } else {
+                    // Full 2nd-order upwind: (-3u_i + 4u_{i+1} - u_{i+2}) / (2*dx)
+                    double coeff = 0.5 * ai;
+                    V(i, i)     += coeff * (-3.0);
+                    V(i, i + 1) += coeff * 4.0;
+                    V(i, i + 2) += coeff * (-1.0);
+                }
+            }
+        }
+
+        V *= config.dt / config.get_dx();
+        return V;
+    }
+
     inline Eigen::MatrixXd FractionalScheme::build_diffusion_matrix() const {
         if (std::abs(config.alpha - 1.0) < ALPHA_EPSILON)
             return build_M3();
@@ -309,6 +362,8 @@ namespace Schemer {
                 return build_force_secondordercentered(force_vector);
             case ForceSchemeType::FirstOrderUpwind:
                 return build_force_firstorderupwind(force_vector);
+            case ForceSchemeType::SecondOrderUpwind:
+                return build_force_secondorderupwind(force_vector);
 
             default:
                 throw std::logic_error("Unhandled ForceSchemeType enum value");
