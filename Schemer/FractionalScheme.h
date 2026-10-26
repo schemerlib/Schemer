@@ -318,6 +318,8 @@ namespace Schemer {
     }
 
     inline Eigen::MatrixXd FractionalScheme::build_diffusion_matrix() const {
+        if (std::abs(config.alpha) < ALPHA_EPSILON)
+            return Eigen::MatrixXd::Zero(config.get_size(), config.get_size());
         if (std::abs(config.alpha - 1.0) < ALPHA_EPSILON)
             return build_M3();
         if (config.alpha < 1.0)

@@ -341,8 +341,8 @@ namespace Schemer {
     };
 
     inline void Builder::validate_parameters() const {
-        if (inner_config.alpha <= 0.0 || inner_config.alpha >= 2.0) throw std::invalid_argument(
-            "alpha must be in (0, 2]");
+        if (inner_config.alpha < 0.0 || inner_config.alpha >= 2.0) throw std::invalid_argument(
+            "alpha must be in [0, 2)");
         if (std::abs(inner_config.beta) > 1.0) throw std::invalid_argument("beta must be in [-1, 1]");
         if (inner_config.sigma < 0.0) throw std::invalid_argument("sigma must be non-negative");
         if (inner_config.length <= 0.0) throw std::invalid_argument("length must be positive");
