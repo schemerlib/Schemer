@@ -297,40 +297,30 @@ namespace Schemer {
     }
 
     inline Eigen::MatrixXd FractionalScheme::build_force_secondorderupwind(const std::vector<double> &force) const {
-        const Eigen::Index N = config.get_size();
-        Eigen::MatrixXd V = Eigen::MatrixXd::Zero(N, N);
+        const Eigen::Index grid_size = config.get_size();
+        Eigen::MatrixXd V = Eigen::MatrixXd::Zero(grid_size, grid_size);
 
-        // Loop over all internal faces (face i + 1/2 between cell i and cell i+1)
-        for (Eigen::Index i = 0; i < N - 1; ++i) {
+        for (Eigen::Index i = 0; i < grid_size - 1; ++i) {
             double f_half = 0.5 * (force[i] + force[i + 1]);
 
             if (f_half >= 0) {
-                // Flow moves right (from cell i to cell i+1 across face i + 1/2)
                 if (i == 0) {
-                    // Leftmost face: fall back to 1st-order upwind (only node 0 is upstream)
                     V(i, i) += f_half;
                     V(i + 1, i) -= f_half;
                 } else {
-                    // 2nd-order upwind reconstruction at the face: (3*u_i - u_{i-1}) / 2
-                    // Flux F = f_half * (1.5*u_i - 0.5*u_{i-1})
                     double c_i = 1.5 * f_half;
                     double c_im1 = -0.5 * f_half;
 
-                    // Outgoing flux from cell i, incoming flux to cell i+1
                     V(i, i) += c_i;
                     V(i, i - 1) += c_im1;
                     V(i + 1, i) -= c_i;
                     V(i + 1, i - 1) -= c_im1;
                 }
             } else {
-                // Flow moves left (from cell i+1 to cell i across face i + 1/2)
-                if (i == N - 2) {
-                    // Rightmost face: fall back to 1st-order upwind (only node N-1 is upstream)
-                    V(i, i + 1) += f_half; // f_half is negative, so += adds magnitude
+                if (i == grid_size - 2) {
+                    V(i, i + 1) += f_half;
                     V(i + 1, i + 1) -= f_half;
                 } else {
-                    // 2nd-order upwind reconstruction at the face: (3*u_{i+1} - u_{i+2}) / 2
-                    // Flux F = f_half * (1.5*u_{i+1} - 0.5*u_{i+2})
                     double c_ip1 = 1.5 * f_half;
                     double c_ip2 = -0.5 * f_half;
 
@@ -347,9 +337,9 @@ namespace Schemer {
             V(0, 0) -= f_left;
         }
 
-        double f_right = force[N - 1];
+        double f_right = force[grid_size - 1];
         if (f_right > 0) {
-            V(N - 1, N - 1) += f_right;
+            V(grid_size - 1, grid_size - 1) += f_right;
         }
 
         V *= config.dt / config.get_dx();
