@@ -24,8 +24,8 @@ TEST_CASE("Config default values") {
     CHECK_EQ(config.zero_input.distance, 0.0);
     CHECK_EQ(config.values_input.type, ValuesInput::Type::Dirac);
     CHECK_EQ(config.values_input.vector.size(), 0);
-    CHECK_EQ(config.force_input.type, ForceInput::Type::Drift);
-    CHECK_EQ(config.force_input.drift_value, 0.0);
+    CHECK_EQ(config.force_input.type, ForceInput::Type::Const);
+    CHECK_EQ(config.force_input.force_value, 0.0);
     CHECK_FALSE(static_cast<bool>(config.force_input.force_function));
     CHECK_UNARY(config.force_input.force_vector.empty());
     CHECK_EQ(config.reset_input.type, ResetInput::Type::Zero);

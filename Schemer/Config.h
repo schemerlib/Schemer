@@ -69,13 +69,13 @@ namespace Schemer {
          * @brief Type of external force.
          */
         enum class Type {
-            Drift, ///< Constant force applied uniformly across the domain.
+            Const, ///< Constant force applied uniformly across the domain.
             Function, ///< Spatially varying force defined by a function f(x).
             Vector ///< Custom force value provided for each grid point.
         };
 
-        Type type = Type::Drift; ///< Selected force type.
-        double drift_value = 0.0; ///< Force value when type is Drift.
+        Type type = Type::Const; ///< Selected force type.
+        double force_value = 0.0; ///< Force value when type is Drift.
         std::function<double(double)> force_function; ///< Function when type is Function.
         std::vector<double> force_vector; ///< Vector when type is Vector.
     };

@@ -10,7 +10,6 @@
 #include <cmath>
 #include <numbers>
 #include <vector>
-#include <variant>
 
 namespace Schemer {
     /**
@@ -44,12 +43,10 @@ namespace Schemer {
         /**
          * @brief Builds the force matrix.
          *
-         * Handles both constant forces (a single number) and variable forces (a value per grid point).
-         *
-         * @param force_variant Either a single value (`double`) or grid values (`std::vector<double>`).
+         * @param force grid values (`std::vector<double>`).
          * @return Eigen::MatrixXd The force matrix.
          */
-        Eigen::MatrixXd build_force_matrix(const std::variant<double, std::vector<double> > &force_variant) const;
+        Eigen::MatrixXd build_force_matrix(const std::vector<double> &force) const;
 
         /**
          * @brief Builds the probability reset rate matrix.
@@ -64,12 +61,11 @@ namespace Schemer {
 
         /**
          * @brief Builds time-stepping matrix based on current settings and forces.
-         * @param force_variant Computed force representation.
+         * @param force Computed force representation.
          * @param reset_index Grid index where siphoned probability is concentrated.
          * @return Eigen::MatrixXd Time step update matrix.
          */
-        Eigen::MatrixXd build_step_matrix(const std::variant<double, std::vector<double> > &force_variant,
-                                          Eigen::Index reset_index) const;
+        Eigen::MatrixXd build_step_matrix(const std::vector<double> &force, Eigen::Index reset_index) const;
 
     private:
         /// Reference to simulation settings.
@@ -113,13 +109,6 @@ namespace Schemer {
          * @return Eigen::MatrixXd Diffusion matrix for \alpha = 1.
          */
         Eigen::MatrixXd build_M3() const;
-
-        /**
-         * @brief Builds the force matrix for a constant force.
-         * @param mi Constant force value.
-         * @return Eigen::MatrixXd Constant force matrix.
-         */
-        Eigen::MatrixXd build_drift(double mi) const;
 
         /**
          * @brief Builds the force matrix for a variable force across grid points using second order centered scheme.
@@ -220,24 +209,6 @@ namespace Schemer {
         }
 
         return M;
-    }
-
-    inline Eigen::MatrixXd FractionalScheme::build_drift(const double mi) const {
-        const Eigen::Index grid_size = config.get_size();
-        Eigen::MatrixXd V = Eigen::MatrixXd::Zero(grid_size, grid_size);
-        for (Eigen::Index i = 0; i < grid_size; i++) {
-            V(i, i) = 3.0;
-            if (i >= 1)
-                V(i, i - 1) = -4.0;
-            if (i >= 2)
-                V(i, i - 2) = 1.0;
-        }
-
-        const double ni = mi * config.dt / (2.0 * config.get_dx());
-
-        if (mi < 0)
-            return -1.0 * ni * V.transpose();
-        return ni * V;
     }
 
     inline Eigen::MatrixXd FractionalScheme::build_force_secondordercentered(const std::vector<double> &force) const {
@@ -354,20 +325,14 @@ namespace Schemer {
         return build_M2();
     }
 
-    inline Eigen::MatrixXd FractionalScheme::build_force_matrix(
-        const std::variant<double, std::vector<double> > &force_variant) const {
-        if (std::holds_alternative<double>(force_variant)) {
-            return build_drift(std::get<double>(force_variant));
-        }
-
-        const auto force_vector = std::get<std::vector<double> >(force_variant);
+    inline Eigen::MatrixXd FractionalScheme::build_force_matrix(const std::vector<double> &force) const {
         switch (config.force_scheme) {
             case ForceSchemeType::SecondOrderCentered:
-                return build_force_secondordercentered(force_vector);
+                return build_force_secondordercentered(force);
             case ForceSchemeType::FirstOrderUpwind:
-                return build_force_firstorderupwind(force_vector);
+                return build_force_firstorderupwind(force);
             case ForceSchemeType::SecondOrderUpwind:
-                return build_force_secondorderupwind(force_vector);
+                return build_force_secondorderupwind(force);
 
             default:
                 throw std::logic_error("Unhandled ForceSchemeType enum value");
@@ -386,10 +351,9 @@ namespace Schemer {
         return reset_matrix;
     }
 
-    inline Eigen::MatrixXd FractionalScheme::build_step_matrix(
-        const std::variant<double, std::vector<double> > &force_variant, const Eigen::Index reset_index) const {
+    inline Eigen::MatrixXd FractionalScheme::build_step_matrix(const std::vector<double> &force, const Eigen::Index reset_index) const {
         const Eigen::MatrixXd diffusion_matrix = build_diffusion_matrix();
-        const Eigen::MatrixXd force_matrix = build_force_matrix(force_variant);
+        const Eigen::MatrixXd force_matrix = build_force_matrix(force);
         const Eigen::MatrixXd reset_rate_matrix = build_reset_matrix(reset_index);
 
         const Eigen::MatrixXd total_operator = diffusion_matrix + force_matrix + reset_rate_matrix;

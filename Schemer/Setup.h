@@ -7,7 +7,6 @@
 
 #include "Config.h"
 #include <Eigen/Dense>
-#include <variant>
 #include <vector>
 
 namespace Schemer {
@@ -42,9 +41,8 @@ namespace Schemer {
         /**
          * @brief External force acting on the system.
          *
-         * Holds either a single constant value applied everywhere (`double`) or
-         * individual force values for each grid point (`std::vector<double>`).
+         * Holds individual force values for each grid point.
          */
-        std::variant<double, std::vector<double> > force_variant;
+        std::vector<double> force;
     };
 } // namespace Schemer

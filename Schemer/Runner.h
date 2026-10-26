@@ -132,7 +132,7 @@ namespace Schemer {
         * @return std::vector<double> Copy of current state values as std::vector.
         */
         std::vector<double> get_values_vector() const {
-            return std::vector<double>(current_values.data(), current_values.data() + current_values.size());
+            return {current_values.begin(), current_values.end()};
         }
     };
 
@@ -169,22 +169,15 @@ namespace Schemer {
             os << setup.initial_state(i) << config.delimiter;
         os << '\n';
 
-        os << '#' << "force_variant: ";
-
-        if (std::holds_alternative<double>(setup.force_variant)) {
-            os << std::get<double>(setup.force_variant) << '\n';
-        } else {
-            for (const double force_value: std::get<std::vector<double> >(setup.force_variant)) {
-                os << force_value << config.delimiter;
-            }
-            os << '\n';
-        }
+        os << '#' << "force: ";
+        for (const double force_value: setup.force)
+            os << force_value << config.delimiter;
+        os << '\n';
 
         os << '#' << "x_coordinates: ";
         auto coords = config.get_coordinates(setup.starting_index);
-        for (const double position: coords) {
+        for (const double position: coords)
             os << position << config.delimiter;
-        }
         os << '\n';
     }
 

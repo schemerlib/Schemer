@@ -12,7 +12,6 @@
 #include <functional>
 #include <utility>
 #include <vector>
-#include <variant>
 #include <string>
 #include <iostream>
 #include <cmath>
@@ -51,11 +50,11 @@ namespace Schemer {
         Eigen::VectorXd compute_initial_state(Eigen::Index starting_index) const;
 
         /**
-         * @brief Converts configured external force into scalar or vector format.
+         * @brief Converts configured external force into vector format.
          * @param starting_index Grid point index for origin x = 0.0.
-         * @return std::variant<double, std::vector<double>> Force representation.
+         * @return td::vector<double> Force representation.
          */
-        std::variant<double, std::vector<double> > compute_force_variant(Eigen::Index starting_index) const;
+        std::vector<double> compute_force(Eigen::Index starting_index) const;
 
         /**
          * @brief Calculates grid point index for the probability reset target location.
@@ -128,12 +127,9 @@ namespace Schemer {
          * @param value Constant force value.
          * @return Builder& Reference to this builder for chaining.
          */
-        Builder &set_drift(double value) {
-            if (inner_config.force_input.type != ForceInput::Type::Drift) {
-                std::cerr << "[WARNING]: force was previously set. Drift will be used instead\n";
-            }
-            inner_config.force_input.drift_value = value;
-            inner_config.force_input.type = ForceInput::Type::Drift;
+        Builder &set_force(double value) {
+            inner_config.force_input.force_value = value;
+            inner_config.force_input.type = ForceInput::Type::Const;
             inner_config.force_input.force_function = nullptr;
             inner_config.force_input.force_vector.clear();
             return *this;
@@ -145,13 +141,10 @@ namespace Schemer {
          * @return Builder& Reference to this builder for chaining.
          */
         Builder &set_force(std::vector<double> value) {
-            if (inner_config.force_input.type == ForceInput::Type::Drift && inner_config.force_input.drift_value !=
-                0.0) {
-                std::cerr << "[WARNING]: drift was previously set. Force vector will be used instead\n";
-            }
             inner_config.force_input.force_vector = std::move(value);
             inner_config.force_input.type = ForceInput::Type::Vector;
             inner_config.force_input.force_function = nullptr;
+            inner_config.force_input.force_value = 0.0;
             return *this;
         }
 
@@ -161,13 +154,10 @@ namespace Schemer {
          * @return Builder& Reference to this builder for chaining.
          */
         Builder &set_force(std::function<double(double)> value) {
-            if (inner_config.force_input.type == ForceInput::Type::Drift && inner_config.force_input.drift_value !=
-                0.0) {
-                std::cerr << "[WARNING]: drift was previously set. Force function will be used instead\n";
-            }
             inner_config.force_input.force_function = std::move(value);
             inner_config.force_input.type = ForceInput::Type::Function;
             inner_config.force_input.force_vector.clear();
+            inner_config.force_input.force_value = 0.0;
             return *this;
         }
 
@@ -435,11 +425,12 @@ namespace Schemer {
         return starting_values;
     }
 
-    inline std::variant<double, std::vector<double> > Builder::compute_force_variant(
-        const Eigen::Index starting_index) const {
+    inline std::vector<double> Builder::compute_force(const Eigen::Index starting_index) const {
         switch (inner_config.force_input.type) {
-            case ForceInput::Type::Drift:
-                return inner_config.force_input.drift_value;
+            case ForceInput::Type::Const: {
+                const double value = inner_config.force_input.force_value;
+                return std::vector<double>(inner_config.get_size(), value);
+            }
             case ForceInput::Type::Function: {
                 if (!inner_config.force_input.force_function)
                     throw std::invalid_argument("force function not set");
@@ -484,18 +475,18 @@ namespace Schemer {
         const Eigen::Index starting_index = compute_starting_index();
         const Eigen::Index reset_index = compute_reset_index(starting_index);
 
-        auto force_variant = compute_force_variant(starting_index);
+        auto force = compute_force(starting_index);
         auto initial_state = compute_initial_state(starting_index);
 
         const FractionalScheme fractional_scheme{inner_config};
-        Eigen::MatrixXd step_matrix = fractional_scheme.build_step_matrix(force_variant, reset_index);
+        Eigen::MatrixXd step_matrix = fractional_scheme.build_step_matrix(force, reset_index);
 
         return Setup{
             .config = inner_config,
             .step_matrix = std::move(step_matrix),
             .initial_state = std::move(initial_state),
             .starting_index = starting_index,
-            .force_variant = std::move(force_variant)
+            .force = std::move(force)
         };
     }
 } // namespace Schemer
