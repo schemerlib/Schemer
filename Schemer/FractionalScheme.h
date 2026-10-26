@@ -297,45 +297,59 @@ namespace Schemer {
     }
 
     inline Eigen::MatrixXd FractionalScheme::build_force_secondorderupwind(const std::vector<double> &force) const {
-        const Eigen::Index grid_size = config.get_size();
-        Eigen::MatrixXd V = Eigen::MatrixXd::Zero(grid_size, grid_size);
+        const Eigen::Index N = config.get_size();
+        Eigen::MatrixXd V = Eigen::MatrixXd::Zero(N, N);
 
-        for (Eigen::Index i = 0; i < grid_size; ++i) {
-            double ai = force[i]; // Local velocity/force at node i
+        // Loop over all internal faces (face i + 1/2 between cell i and cell i+1)
+        for (Eigen::Index i = 0; i < N - 1; ++i) {
+            double f_half = 0.5 * (force[i] + force[i + 1]);
 
-            if (ai >= 0) {
+            if (f_half >= 0) {
+                // Flow moves right (from cell i to cell i+1 across face i + 1/2)
                 if (i == 0) {
-                    // Left boundary (Inflow): 1st-order fallback
-                    V(i, i) += ai;
-                } else if (i == 1) {
-                    // Near boundary: 1st-order fallback (only 1 upstream node available)
-                    V(i, i)     += ai;
-                    V(i, i - 1) -= ai;
+                    // Leftmost face: fall back to 1st-order upwind (only node 0 is upstream)
+                    V(i, i) += f_half;
+                    V(i + 1, i) -= f_half;
                 } else {
-                    // Full 2nd-order upwind: (3u_i - 4u_{i-1} + u_{i-2}) / (2*dx)
-                    // Multiplying by 0.5 allows us to factor out dt/dx cleanly at the end.
-                    double coeff = 0.5 * ai;
-                    V(i, i)     += coeff * 3.0;
-                    V(i, i - 1) += coeff * (-4.0);
-                    V(i, i - 2) += coeff * 1.0;
+                    // 2nd-order upwind reconstruction at the face: (3*u_i - u_{i-1}) / 2
+                    // Flux F = f_half * (1.5*u_i - 0.5*u_{i-1})
+                    double c_i = 1.5 * f_half;
+                    double c_im1 = -0.5 * f_half;
+
+                    // Outgoing flux from cell i, incoming flux to cell i+1
+                    V(i, i) += c_i;
+                    V(i, i - 1) += c_im1;
+                    V(i + 1, i) -= c_i;
+                    V(i + 1, i - 1) -= c_im1;
                 }
             } else {
-                // Negative flow (moving right to left)
-                if (i == grid_size - 1) {
-                    // Right boundary (Inflow): 1st-order fallback
-                    V(i, i) -= ai; // Since ai is negative, -ai adds a positive magnitude
-                } else if (i == grid_size - 2) {
-                    // Near boundary: 1st-order fallback (only 1 upstream node available)
-                    V(i, i)     -= ai;
-                    V(i, i + 1) += ai;
+                // Flow moves left (from cell i+1 to cell i across face i + 1/2)
+                if (i == N - 2) {
+                    // Rightmost face: fall back to 1st-order upwind (only node N-1 is upstream)
+                    V(i, i + 1) += f_half; // f_half is negative, so += adds magnitude
+                    V(i + 1, i + 1) -= f_half;
                 } else {
-                    // Full 2nd-order upwind: (-3u_i + 4u_{i+1} - u_{i+2}) / (2*dx)
-                    double coeff = 0.5 * ai;
-                    V(i, i)     += coeff * (-3.0);
-                    V(i, i + 1) += coeff * 4.0;
-                    V(i, i + 2) += coeff * (-1.0);
+                    // 2nd-order upwind reconstruction at the face: (3*u_{i+1} - u_{i+2}) / 2
+                    // Flux F = f_half * (1.5*u_{i+1} - 0.5*u_{i+2})
+                    double c_ip1 = 1.5 * f_half;
+                    double c_ip2 = -0.5 * f_half;
+
+                    V(i, i + 1) += c_ip1;
+                    V(i, i + 2) += c_ip2;
+                    V(i + 1, i + 1) -= c_ip1;
+                    V(i + 1, i + 2) -= c_ip2;
                 }
             }
+        }
+
+        double f_left = force[0];
+        if (f_left < 0) {
+            V(0, 0) -= f_left;
+        }
+
+        double f_right = force[N - 1];
+        if (f_right > 0) {
+            V(N - 1, N - 1) += f_right;
         }
 
         V *= config.dt / config.get_dx();
