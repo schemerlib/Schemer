@@ -1,7 +1,6 @@
 #include <doctest/doctest.h>
 
 #include <stdexcept>
-#include <variant>
 #include <vector>
 
 #include <Schemer/Schemer.h>
@@ -100,8 +99,7 @@ TEST_CASE("Builder build_setup uses configured index and vectors") {
     for (Eigen::Index i = 0; i < setup.initial_state.size(); ++i) {
         CHECK_EQ(setup.initial_state(i), initial_values[static_cast<std::size_t>(i)]);
     }
-    REQUIRE(std::holds_alternative<std::vector<double>>(setup.force_variant));
-    CHECK_EQ(std::get<std::vector<double>>(setup.force_variant), force_values);
+    CHECK_EQ(setup.force, force_values);
     CHECK_EQ(setup.step_matrix.rows(), 5);
     CHECK_EQ(setup.step_matrix.cols(), 5);
     CHECK_UNARY(setup.step_matrix.allFinite());
@@ -121,9 +119,7 @@ TEST_CASE("Builder build_setup evaluates force at configured coordinates") {
     CHECK_EQ(setup.config.zero_input.distance, 2.0);
     CHECK_EQ(setup.config.force_input.type, ForceInput::Type::Function);
     CHECK_UNARY(static_cast<bool>(setup.config.force_input.force_function));
-    REQUIRE(std::holds_alternative<std::vector<double>>(setup.force_variant));
-    CHECK_EQ(std::get<std::vector<double>>(setup.force_variant),
-             (std::vector<double>{-4.0, 0.0, 4.0, 8.0, 12.0}));
+    CHECK_EQ(setup.force,(std::vector<double>{-4.0, 0.0, 4.0, 8.0, 12.0}));
 }
 
 TEST_CASE("Builder applies the configured force scheme") {

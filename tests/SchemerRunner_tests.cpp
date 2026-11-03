@@ -157,3 +157,20 @@ TEST_CASE (
         CHECK(runner2.get_values().isApprox(expected));
     }
 }
+
+TEST_CASE (
+"Getters"
+)
+{    Setup setup = make_setup();
+    Runner runner(setup);
+    auto values = setup.initial_state;
+
+    SUBCASE("Get_values works") {
+        CHECK_EQ(runner.get_values(), values);
+    }
+
+    SUBCASE("Get_values_vector works") {
+        std::vector<double> expected = {values.begin(), values.end()};
+        CHECK_EQ(runner.get_values_vector(), expected);
+    }
+}
