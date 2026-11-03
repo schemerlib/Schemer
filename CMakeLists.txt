@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.21)
 project(Schemer VERSION 1.0.0 LANGUAGES CXX)
 
 option(BUILD_TESTING "Build the testing tree for Schemer" ${PROJECT_IS_TOP_LEVEL})
+option(SCHEMER_BUILD_EXAMPLES "Build the Schemer examples" OFF)
 
 add_library(Schemer INTERFACE)
 
@@ -41,4 +42,8 @@ target_link_libraries(Schemer INTERFACE Eigen3::Eigen)
 if (BUILD_TESTING)
     enable_testing()
     add_subdirectory(tests)
+endif ()
+
+if (SCHEMER_BUILD_EXAMPLES)
+    add_subdirectory(examples)
 endif ()
