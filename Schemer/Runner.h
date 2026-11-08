@@ -40,18 +40,21 @@ namespace Schemer {
          * @brief Writes current progress percentage to an output stream.
          * @param os Stream where log messages are written.
          * @param progress_percent Completion percentage (0 to 100).
+         * @return bool True if write succeeded, false if stream failed.
          */
         static bool log(std::ostream &os, double progress_percent);
 
         /**
          * @brief Writes configuration settings to an output stream.
          * @param os Stream where parameters are written.
+         * @return bool True if all parameters were written successfully, false otherwise.
          */
         bool save_parameters(std::ostream &os) const;
 
         /**
          * @brief Writes current grid values to an output stream.
          * @param os Stream where current state values are written.
+         * @return bool True if values were written successfully, false otherwise.
          */
         bool save_current_values(std::ostream &os) const;
 
@@ -87,7 +90,7 @@ namespace Schemer {
          * optionally writes history states to a stream at specified step intervals.
          *
          * @param steps Total number of time steps to run.
-         * @param history_stream Optional output stream for saving history data.
+         * @param history_stream Optional output stream for saving history data (pass nullptr to skip).
          * @param history_save_interval How often to save state history in steps (set to 0 to skip saving).
          */
         void run(int steps, std::ostream &history_stream, int history_save_interval);
@@ -146,11 +149,7 @@ namespace Schemer {
            << progress_percent
            << "%" << std::endl;
 
-        if (!os) {
-            std::cerr << "[WARNING] Failed writing to progress log stream. Further progress logs may be skipped.\n";
-            return false;
-        }
-        return true;
+        return static_cast<bool>(os);
     }
 
     inline bool Runner::save_parameters(std::ostream &os) const {
@@ -168,7 +167,6 @@ namespace Schemer {
         os << '#' << "delimiter: " << config.delimiter << '\n';
         os << '#' << "log_interval_percent: " << config.log_interval_percent << '\n';
         os << '#' << "log_file_path: " << config.log_file_path << '\n';
-
         os << '#' << "initial_values: ";
         for (Eigen::Index i = 0; i < setup.initial_state.size(); i++)
             os << setup.initial_state(i) << config.delimiter;
@@ -185,11 +183,7 @@ namespace Schemer {
             os << position << config.delimiter;
         os << '\n';
 
-        if (!os) {
-            throw std::runtime_error("Failed writing setup parameters to stream");
-            return false;
-        }
-        return true;
+        return static_cast<bool>(os);
     }
 
     inline bool Runner::save_current_values(std::ostream &os) const {
@@ -197,12 +191,7 @@ namespace Schemer {
         for (Eigen::Index i = 0; i < current_values.size(); i++)
             os << current_values(i) << delimiter;
         os << "\n";
-
-        if (!os) {
-            throw std::runtime_error("Failed writing grid values to stream");
-            return false;
-        }
-        return true;
+        return static_cast<bool>(os);
     }
 
     inline void Runner::run(const int steps, std::ostream &history_stream, const int history_save_interval) {
@@ -210,15 +199,13 @@ namespace Schemer {
             throw std::invalid_argument("amount of steps cannot be negative");
         if (history_save_interval < 0)
             throw std::invalid_argument("history_save_interval cannot be negative");
-
-        const bool should_log_history = history_save_interval > 0;
-        if (should_log_history && !history_stream) {
-            throw std::invalid_argument("history_save_interval > 0 but invalid history_stream provided");
-        }
-
-        if (should_log_history) {
-            if (history_stream.tellp() <= 0)
-                save_parameters(history_stream);
+        if (history_save_interval > 0 && history_stream.fail())
+            std::cerr << "[WARNING] history_stream not provided, history will not be saved\n";
+        const bool should_log_history = history_stream && history_save_interval > 0;
+        if (should_log_history && history_stream.tellp() <= 0) {
+            if (!save_parameters(history_stream)) {
+                throw std::runtime_error("Failed writing simulation parameters to history stream");
+            }
         }
 
         std::ofstream log_stream;
@@ -226,8 +213,8 @@ namespace Schemer {
         if (should_log_progress) {
             log_stream.open(setup.config.log_file_path);
             if (!log_stream) {
-                std::cerr << "[WARNING] Failed opening log file " + setup.config.log_file_path +
-                        ", logs will not be saved\n";
+                std::cerr << "[WARNING] Failed opening log file " + setup.config.log_file_path <<
+                        " logs will not be saved\n";
                 should_log_progress = false;
             }
         }
@@ -239,17 +226,17 @@ namespace Schemer {
 
         for (int step = 0; step < steps; step++) {
             if (should_log_progress && step % log_interval == 0) {
-                if (!log(log_stream, 100.0 * step / steps)) {
+                if (!log(log_stream, (100.0 * step) / steps)) {
+                    std::cerr << "[WARNING] Failed writing to progress log stream.\n";
                     should_log_progress = false;
                 }
             }
 
             if (should_log_history && step % history_save_interval == 0) {
-                save_current_values(history_stream);
-                history_stream.flush();
-                if (!history_stream) {
+                if (!save_current_values(history_stream)) {
                     throw std::runtime_error("Failed writing history data at step " + std::to_string(step));
                 }
+                history_stream.flush();
             }
 
             current_values = setup.step_matrix * current_values;
@@ -257,36 +244,36 @@ namespace Schemer {
         }
 
         if (should_log_history) {
-            save_current_values(history_stream);
+            if (!save_current_values(history_stream)) {
+                throw std::runtime_error("Failed writing final history data");
+            }
             history_stream.flush();
-            if (!history_stream) {
-                throw std::runtime_error("Failed writing final history data frame");
-            }
         }
 
-        if (should_log_progress) {
+        if (should_log_progress)
             log(log_stream, 100.0);
-        }
 
-        if (log_stream.is_open()) {
+        if (log_stream.is_open())
             log_stream.close();
-            if (log_stream.fail()) {
-                std::cerr << "[WARNING] Failed to cleanly close progress log file\n";
-            }
-        }
     }
 
     inline void Runner::save_result(std::ostream &out_stream) const {
         if (!out_stream)
             throw std::runtime_error("Invalid output stream");
 
-        save_parameters(out_stream);
-        out_stream << '#' << "steps: " << steps_taken << '\n';
-        save_current_values(out_stream);
-        out_stream.flush();
+        if (!save_parameters(out_stream))
+            throw std::runtime_error("Failed to write simulation parameters to output stream");
 
+        out_stream << '#' << "steps: " << steps_taken << '\n';
+
+        if (!save_current_values(out_stream))
+            throw std::runtime_error("Failed to write current simulation values to output stream");
+
+        out_stream.flush();
         if (!out_stream)
             throw std::runtime_error("Failed to write simulation result to output stream");
+
+        std::cout << "Saved to the given stream" << '\n';
     }
 
     inline void Runner::save_result(const std::string &filepath) const {
@@ -299,5 +286,7 @@ namespace Schemer {
         out_stream.close();
         if (out_stream.fail())
             throw std::runtime_error("Failed to finish writing save file: " + filepath);
+
+        std::cout << "Saved to " << filepath << '\n';
     }
 } // namespace Schemer

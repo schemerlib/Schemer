@@ -195,12 +195,6 @@ namespace Schemer {
         ForceSchemeType force_scheme = ForceSchemeType::SecondOrderCentered;
 
         /**
-         * @brief Controls how much detail is printed to the terminal.
-         *
-         */
-        int verbose = 1;
-
-        /**
          * @brief Calculates uniform grid step size (\Delta x).
          * @return double Grid step size.
          */

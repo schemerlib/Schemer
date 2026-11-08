@@ -202,16 +202,6 @@ namespace Schemer {
         }
 
         /**
-         * @brief Sets detail level for terminal logging output.
-         * @param value Verbosity level for built objects.
-         * @return Builder& Reference to this builder for chaining.
-         */
-        Builder &set_verbosity(int value) {
-            inner_config.verbose = value;
-            return *this;
-        }
-
-        /**
          * @brief Sets column delimiter string used when saving output data.
          * @param value Delimiter sequence (e.g., tab or comma).
          * @return Builder& Reference to this builder for chaining.

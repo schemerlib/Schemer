@@ -38,8 +38,7 @@ int main() {
             .set_dt(0.005)
             .set_theta(0.5)              
             .set_log_interval_percent(10)
-            .set_log_file_path("advanced_progress.log")
-            .set_verbosity(0);           
+            .set_log_file_path("advanced_progress.log");
 
     // --- 1. Constant drift --------------------------------------------------
     Schemer::Runner drift_runner = Schemer::Builder(base)

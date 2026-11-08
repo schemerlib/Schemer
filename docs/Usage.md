@@ -117,7 +117,6 @@ builder.set_reset_index(150);     // or reset to a given grid index
 | `set_delimiter(std::string)` | `"\t"` | Column separator used in result and history output. |
 | `set_log_interval_percent(double)` | `5.0` | Progress is logged every that many percent of a `run()` call. `0` disables logging. |
 | `set_log_file_path(std::string)` | `"schemer_progress.log"` | File for progress messages. It is overwritten by each `run()` call. |
-| `set_verbosity(int)` | `1` | `0` silences info messages, `1` prints "Saved to …", `>1` prints extra info. |
 
 ## Working with Config directly
 
