@@ -272,8 +272,6 @@ namespace Schemer {
         out_stream.flush();
         if (!out_stream)
             throw std::runtime_error("Failed to write simulation result to output stream");
-
-        std::cout << "Saved to the given stream" << '\n';
     }
 
     inline void Runner::save_result(const std::string &filepath) const {
@@ -286,7 +284,5 @@ namespace Schemer {
         out_stream.close();
         if (out_stream.fail())
             throw std::runtime_error("Failed to finish writing save file: " + filepath);
-
-        std::cout << "Saved to " << filepath << '\n';
     }
 } // namespace Schemer
