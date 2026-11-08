@@ -244,12 +244,16 @@ namespace Schemer {
     }
 
     inline void Runner::save_result(std::ostream &out_stream) const {
-        if (!out_stream) {
+        if (!out_stream)
             throw std::runtime_error("Invalid output stream");
-        }
+
         save_parameters(out_stream);
         out_stream << '#' << "steps: " << steps_taken << '\n';
         save_current_values(out_stream);
+        out_stream.flush();
+        if (!out_stream)
+            throw std::runtime_error("Failed to write simulation result to output stream");
+
         if (setup.config.verbose > 0)
             std::cout << "Saved to the given stream" << '\n';
     }
@@ -259,13 +263,13 @@ namespace Schemer {
         if (!out_stream) {
             throw std::runtime_error("Failed to open save file: " + filepath);
         }
-        save_parameters(out_stream);
-        out_stream << '#' << "steps: " << steps_taken << '\n';
-        save_current_values(out_stream);
+
+        save_result(out_stream);
+        out_stream.close();
+        if (out_stream.fail())
+            throw std::runtime_error("Failed to finish writing save file: " + filepath);
+
         if (setup.config.verbose > 0)
             std::cout << "Saved to " << filepath << '\n';
-
-        if (out_stream.is_open())
-            out_stream.close();
     }
 } // namespace Schemer

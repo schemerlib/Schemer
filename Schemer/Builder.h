@@ -484,9 +484,9 @@ namespace Schemer {
         return Setup{
             .config = inner_config,
             .step_matrix = std::move(step_matrix),
+            .force = std::move(force),
             .initial_state = std::move(initial_state),
-            .starting_index = starting_index,
-            .force = std::move(force)
+            .starting_index = starting_index
         };
     }
 } // namespace Schemer

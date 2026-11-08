@@ -29,6 +29,13 @@ namespace Schemer {
         Eigen::MatrixXd step_matrix;
 
         /**
+         * @brief External force acting on the system.
+         *
+         * Holds individual force values for each grid point.
+         */
+        std::vector<double> force;
+
+        /**
          * @brief Starting values for all physical points across the spatial grid at time t = 0.
          */
         Eigen::VectorXd initial_state;
@@ -37,12 +44,5 @@ namespace Schemer {
          * @brief Grid point index corresponding to position x = 0.0.
          */
         Eigen::Index starting_index;
-
-        /**
-         * @brief External force acting on the system.
-         *
-         * Holds individual force values for each grid point.
-         */
-        std::vector<double> force;
     };
 } // namespace Schemer
