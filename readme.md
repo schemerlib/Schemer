@@ -62,7 +62,7 @@ target_link_libraries(your_target PRIVATE Schemer::Schemer)
 ### Manual
 
 Download and extract the [Eigen 3.4.0 release](https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.zip),
-and the [Schemer release](https://github.com/schemerlib/Schemer/archive/refs/tags/1.0.0.zip).
+and the [Schemer release](http://codeload.github.com/schemerlib/Schemer/zip/refs/tags/1.0.0).
 
 ```sh
 git clone https://github.com/schemerlib/Schemer.git
