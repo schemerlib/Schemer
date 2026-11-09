@@ -94,8 +94,22 @@ namespace Schemer {
          */
         double calculate_cauchy_omega() const;
 
+        /**
+         * @brief Builds the diffusion matrix for 0 < \alpha < 1.
+         * @return Eigen::MatrixXd Diffusion matrix for \alpha < 1.
+         */
         Eigen::MatrixXd build_subdiffusion() const;
+
+        /**
+         * @brief Builds the diffusion matrix for \alpha = 1.
+         * @return Eigen::MatrixXd Diffusion matrix for \alpha = 1.
+         */
         Eigen::MatrixXd build_superdiffusion() const;
+
+        /**
+         * @brief Builds the diffusion matrix for 1 < \alpha \le 2.
+         * @return Eigen::MatrixXd Diffusion matrix for \alpha > 1.
+         */
         Eigen::MatrixXd build_cauchydiffusion() const;
 
         /**
