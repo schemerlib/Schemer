@@ -10,6 +10,7 @@
 #include <cmath>
 #include <numbers>
 #include <vector>
+#include <stdexcept>
 
 namespace Schemer {
     /**
@@ -25,24 +26,18 @@ namespace Schemer {
          */
         static constexpr double ALPHA_EPSILON = 1e-8;
 
-        /**
-         * @brief Construct a new FractionalScheme object with configuration settings.
-         * @param config Reference to the Config object containing simulation settings.
-         */
-        explicit FractionalScheme(const Config &config);
+        explicit FractionalScheme(const Config &config) : config(config) {
+            n = static_cast<int>(std::ceil(config.alpha));
+        }
 
         /**
          * @brief Builds the main spatial diffusion matrix.
-         *
-         * Calls build_M1(), build_M2(), or build_M3() depending on the value of \alpha.
-         *
          * @return Eigen::MatrixXd The spatial diffusion matrix.
          */
         Eigen::MatrixXd build_diffusion_matrix() const;
 
         /**
          * @brief Builds the force matrix.
-         *
          * @param force grid values (`std::vector<double>`).
          * @return Eigen::MatrixXd The force matrix.
          */
@@ -68,47 +63,40 @@ namespace Schemer {
         Eigen::MatrixXd build_step_matrix(const std::vector<double> &force, Eigen::Index reset_index) const;
 
     private:
-        /// Reference to simulation settings.
         const Config &config;
+        int n;
 
-        /// Weight for the left-side fractional derivative (\omega_L).
-        double L_omega;
-
-        /// Weight for the right-side fractional derivative (\omega_R).
-        double R_omega;
-
-        /// Weight factor used when \alpha = 1.
-        double cauchyOmega;
-
-        /// \alpha rounded up.
-        double n;
+        bool is_alpha_one() const {
+            return std::abs(config.alpha - 1.0) < ALPHA_EPSILON;
+        }
 
         /**
          * @brief Calculates fractional weight coefficients (\lambda_k^{(\alpha)}).
-         *
-         * Generates a list of weight values used to construct the diffusion matrix.
-         *
          * @return std::vector<double> List of calculated weights.
          */
         std::vector<double> get_lambdas() const;
 
         /**
-         * @brief Builds the diffusion matrix for 0 < \alpha < 1.
-         * @return Eigen::MatrixXd Diffusion matrix for \alpha < 1.
+         * @brief Holds calculated left and right fractional weights.
          */
-        Eigen::MatrixXd build_M1() const;
+        struct FractionalOmegas {
+            double L_omega;
+            double R_omega;
+        };
 
         /**
-         * @brief Builds the diffusion matrix for 1 < \alpha \le 2.
-         * @return Eigen::MatrixXd Diffusion matrix for \alpha > 1.
+         * @brief Calculates fractional weights (L_omega, R_omega) for alpha != 1.
          */
-        Eigen::MatrixXd build_M2() const;
+        FractionalOmegas calculate_fractional_omegas() const;
 
         /**
-         * @brief Builds the diffusion matrix for \alpha = 1.
-         * @return Eigen::MatrixXd Diffusion matrix for \alpha = 1.
+         * @brief Calculates the Cauchy weight factor for alpha == 1.
          */
-        Eigen::MatrixXd build_M3() const;
+        double calculate_cauchy_omega() const;
+
+        Eigen::MatrixXd build_subdiffusion() const;
+        Eigen::MatrixXd build_superdiffusion() const;
+        Eigen::MatrixXd build_cauchydiffusion() const;
 
         /**
          * @brief Builds the force matrix for a variable force across grid points using second order centered scheme.
@@ -132,39 +120,51 @@ namespace Schemer {
         Eigen::MatrixXd build_force_secondorderupwind(const std::vector<double> &force) const;
     };
 
-    inline FractionalScheme::FractionalScheme(const Config &config) : config(config) {
-        const double alpha = config.alpha;
-        const double dx = config.get_dx();
-        n = std::ceil(alpha);
-
-        cauchyOmega = 2.0 * config.sigma * config.dt / (dx * std::numbers::pi);
-
-        const double omega = config.sigma * config.dt / (std::tgamma(n + 1 - alpha) * std::pow(dx, alpha));
-        const double denominator = 2.0 * std::cos(std::numbers::pi * alpha / 2.0);
-        L_omega = -omega * (1.0 + config.beta) / denominator;
-        R_omega = -omega * (1.0 - config.beta) / denominator;
-    }
-
     inline std::vector<double> FractionalScheme::get_lambdas() const {
         const Eigen::Index grid_size = config.get_size();
+        const int n = static_cast<int>(std::ceil(config.alpha));
         std::vector<double> result(grid_size + 2);
         for (int i = 1; i < grid_size + 2; i++) {
             result[i] = std::pow(i, n - config.alpha) - std::pow(i - 1, n - config.alpha);
         }
-
         return result;
     }
 
-    inline Eigen::MatrixXd FractionalScheme::build_M1() const {
+    inline FractionalScheme::FractionalOmegas FractionalScheme::calculate_fractional_omegas() const {
+        const double dx = config.get_dx();
+        const double omega = config.sigma * config.dt / (std::tgamma(n + 1 - config.alpha) * std::pow(dx, config.alpha));
+        const double denominator = 2.0 * std::cos(std::numbers::pi * config.alpha / 2.0);
+
+        return {
+            .L_omega = -omega * (1.0 + config.beta) / denominator,
+            .R_omega = -omega * (1.0 - config.beta) / denominator
+        };
+    }
+
+    inline double FractionalScheme::calculate_cauchy_omega() const {
+        const double dx = config.get_dx();
+        return 2.0 * config.sigma * config.dt / (dx * std::numbers::pi);
+    }
+
+    inline Eigen::MatrixXd FractionalScheme::build_diffusion_matrix() const {
+        if (is_alpha_one()) {
+            return build_cauchydiffusion();
+        }
+        return (config.alpha < 1.0) ? build_subdiffusion() : build_superdiffusion();
+    }
+
+    inline Eigen::MatrixXd FractionalScheme::build_subdiffusion() const {
         const Eigen::Index grid_size = config.get_size();
         Eigen::MatrixXd M = Eigen::MatrixXd::Zero(grid_size, grid_size);
-        const auto lambda = get_lambdas();
 
-        const double v0 = lambda[1];
+        const auto [L_omega, R_omega] = calculate_fractional_omegas();
+        const auto lambdas = get_lambdas();
+
+        const double v0 = lambdas[1];
         M.diagonal().setConstant(-1.0 * (L_omega + R_omega) * v0);
 
         for (Eigen::Index i = 1; i < grid_size; i++) {
-            const double value = lambda[i] - lambda[i + 1];
+            const double value = lambdas[i] - lambdas[i + 1];
             M.diagonal(-i).setConstant(value * L_omega);
             M.diagonal(i).setConstant(value * R_omega);
         }
@@ -172,21 +172,24 @@ namespace Schemer {
         return M;
     }
 
-    inline Eigen::MatrixXd FractionalScheme::build_M2() const {
+    inline Eigen::MatrixXd FractionalScheme::build_superdiffusion() const {
         const Eigen::Index grid_size = config.get_size();
         Eigen::MatrixXd M = Eigen::MatrixXd::Zero(grid_size, grid_size);
-        const auto lambda = get_lambdas();
 
-        const double v0 = lambda[2] - 2.0 * lambda[1];
+        const auto [L_omega, R_omega] = calculate_fractional_omegas();
+
+        const auto lambdas = get_lambdas();
+
+        const double v0 = lambdas[2] - 2.0 * lambdas[1];
         M.diagonal().setConstant(-1.0 * (L_omega + R_omega) * v0);
 
-        const double v1 = lambda[3] - 2 * lambda[2] + lambda[1];
-        const double v2 = lambda[1];
+        const double v1 = lambdas[3] - 2.0 * lambdas[2] + lambdas[1];
+        const double v2 = lambdas[1];
         M.diagonal(-1).setConstant(-1.0 * (L_omega * v1 + R_omega * v2));
         M.diagonal(1).setConstant(-1.0 * (R_omega * v1 + L_omega * v2));
 
         for (Eigen::Index i = 2; i < grid_size; i++) {
-            const double value = lambda[i + 2] - 2 * lambda[i + 1] + lambda[i];
+            const double value = lambdas[i + 2] - 2.0 * lambdas[i + 1] + lambdas[i];
             M.diagonal(-i).setConstant(-1.0 * value * L_omega);
             M.diagonal(i).setConstant(-1.0 * value * R_omega);
         }
@@ -194,15 +197,17 @@ namespace Schemer {
         return M;
     }
 
-    inline Eigen::MatrixXd FractionalScheme::build_M3() const {
+    inline Eigen::MatrixXd FractionalScheme::build_cauchydiffusion() const {
         const Eigen::Index grid_size = config.get_size();
         Eigen::MatrixXd M = Eigen::MatrixXd::Zero(grid_size, grid_size);
+
+        const double cauchyOmega = calculate_cauchy_omega();
 
         M.diagonal().setConstant(2.0 * cauchyOmega);
 
         for (Eigen::Index i = 1; i < grid_size; i++) {
             const auto double_i = static_cast<double>(i);
-            double value = 1.0 / (2.0 * double_i + 1.0) - 1.0 / (2.0 * (double_i - 1) + 1.0);
+            double value = 1.0 / (2.0 * double_i + 1.0) - 1.0 / (2.0 * (double_i - 1.0) + 1.0);
             value *= cauchyOmega;
             M.diagonal(-i).setConstant(value);
             M.diagonal(i).setConstant(value);
@@ -224,15 +229,12 @@ namespace Schemer {
         if (grid_size > 1) {
             V(0, 0) = -force[0];
             V(0, 1) = force[0];
-        }
-
-        if (grid_size > 1) {
             Eigen::Index last = grid_size - 1;
             V(last, last) = force[last];
             V(last, last - 1) = -force[last];
         }
 
-        V *= config.dt / (2 * config.get_dx());
+        V *= config.dt / (2.0 * config.get_dx());
         return V;
     }
 
@@ -252,15 +254,11 @@ namespace Schemer {
             }
         }
 
-        double f_left = force[0];
-        if (f_left < 0) {
-            V(0, 0) -= f_left;
+        if (force[0] < 0) {
+            V(0, 0) -= force[0];
         }
-
-        double f_right = force[grid_size - 1];
-        if (f_right > 0) {
-            Eigen::Index last = grid_size - 1;
-            V(last, last) += f_right;
+        if (force[grid_size - 1] > 0) {
+            V(grid_size - 1, grid_size - 1) += force[grid_size - 1];
         }
 
         V *= config.dt / config.get_dx();
@@ -303,26 +301,15 @@ namespace Schemer {
             }
         }
 
-        double f_left = force[0];
-        if (f_left < 0) {
-            V(0, 0) -= f_left;
+        if (force[0] < 0) {
+            V(0, 0) -= force[0];
         }
-
-        double f_right = force[grid_size - 1];
-        if (f_right > 0) {
-            V(grid_size - 1, grid_size - 1) += f_right;
+        if (force[grid_size - 1] > 0) {
+            V(grid_size - 1, grid_size - 1) += force[grid_size - 1];
         }
 
         V *= config.dt / config.get_dx();
         return V;
-    }
-
-    inline Eigen::MatrixXd FractionalScheme::build_diffusion_matrix() const {
-        if (std::abs(config.alpha - 1.0) < ALPHA_EPSILON)
-            return build_M3();
-        if (config.alpha < 1.0)
-            return build_M1();
-        return build_M2();
     }
 
     inline Eigen::MatrixXd FractionalScheme::build_force_matrix(const std::vector<double> &force) const {
@@ -333,7 +320,6 @@ namespace Schemer {
                 return build_force_firstorderupwind(force);
             case ForceSchemeType::SecondOrderUpwind:
                 return build_force_secondorderupwind(force);
-
             default:
                 throw std::logic_error("Unhandled ForceSchemeType enum value");
         }
