@@ -137,7 +137,7 @@ namespace Schemer {
         const double dx = config.get_dx();
         n = std::ceil(alpha);
 
-        cauchyOmega = config.sigma * config.dt / (dx * std::numbers::pi);
+        cauchyOmega = 2.0 * config.sigma * config.dt / (dx * std::numbers::pi);
 
         const double omega = config.sigma * config.dt / (std::tgamma(n + 1 - alpha) * std::pow(dx, alpha));
         const double denominator = 2.0 * std::cos(std::numbers::pi * alpha / 2.0);
