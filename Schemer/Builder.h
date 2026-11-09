@@ -73,10 +73,10 @@ namespace Schemer {
         }
 
         /**
-        - @brief Sets the full configuration object.
-        - @param config Config object containing all simulation parameters.
-        - @return Builder& Reference to this builder for chaining.
-        */
+         * @brief Sets the full configuration object.
+         * @param config Config object containing all simulation parameters.
+         * @return Builder& Reference to this builder for chaining.
+         */
         Builder &set_config(Config config) {
             inner_config = std::move(config);
             return *this;
