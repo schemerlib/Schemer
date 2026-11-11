@@ -5,9 +5,11 @@
 
 #pragma once
 
-#include "Config.h"
-#include <Eigen/Dense>
 #include <vector>
+
+#include <Eigen/Dense>
+
+#include "Config.h"
 
 namespace Schemer {
     /**

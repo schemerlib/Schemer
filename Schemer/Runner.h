@@ -16,6 +16,9 @@
 #include <string>
 #include <utility>
 #include <vector>
+
+#include <Eigen/Dense>
+
 #include "Setup.h"
 
 namespace Schemer {

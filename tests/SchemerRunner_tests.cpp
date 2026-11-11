@@ -1,7 +1,12 @@
 #include <doctest/doctest.h>
-#include <sstream>
-#include <fstream>
+
 #include <cstdio>
+#include <fstream>
+#include <sstream>
+#include <stdexcept>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include <Schemer/Schemer.h>
 using namespace Schemer;

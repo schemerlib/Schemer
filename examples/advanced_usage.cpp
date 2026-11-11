@@ -10,6 +10,7 @@
 #include <numbers>
 #include <stdexcept>
 #include <vector>
+
 #include <Eigen/Dense>
 #include <Schemer/Schemer.h>
 

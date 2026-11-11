@@ -5,18 +5,21 @@
 
 #pragma once
 
-#include "Runner.h"
-#include "Config.h"
-#include "FractionalScheme.h"
-#include <Eigen/Dense>
+#include <cmath>
+#include <cstddef>
 #include <functional>
+#include <iostream>
+#include <stdexcept>
+#include <string>
 #include <utility>
 #include <vector>
-#include <string>
-#include <iostream>
-#include <cmath>
-#include <stdexcept>
 
+#include <Eigen/Dense>
+
+#include "Config.h"
+#include "FractionalScheme.h"
+#include "Runner.h"
+#include "Setup.h"
 
 namespace Schemer {
     /**
@@ -428,7 +431,7 @@ namespace Schemer {
                 const auto coords = inner_config.get_coordinates(starting_index);
                 std::vector<double> force_values(coords.size());
 
-                for (size_t i = 0; i < coords.size(); ++i) {
+                for (std::size_t i = 0; i < coords.size(); ++i) {
                     force_values[i] = inner_config.force_input.force_function(coords[i]);
                 }
                 return force_values;
