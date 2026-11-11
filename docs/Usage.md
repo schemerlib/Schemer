@@ -13,7 +13,7 @@ All classes live in the `Schemer` namespace. A typical program has three steps:
 2. Build a Schemer::Runner and advance it in time with Schemer::Runner::run.
 3. Read the state or write it to a file or stream.
 
-Complete, runnable programs are in the `examples/` directory and are shown at the [end of this page](#usage_examples).
+Complete, runnable programs are in the `examples/` directory and are shown [below](#usage_examples).
 
 [TOC]
 
