@@ -9,6 +9,7 @@
 #include <ctime>
 #include <fstream>
 #include <iomanip>
+#include <ios>
 #include <iostream>
 #include <ostream>
 #include <stdexcept>
@@ -204,7 +205,7 @@ namespace Schemer {
         const bool should_log_history = history_stream && history_save_interval > 0;
         if (should_log_history && history_stream.tellp() <= 0) {
             if (!save_parameters(history_stream)) {
-                throw std::runtime_error("Failed writing simulation parameters to history stream");
+                throw std::ios_base::failure("Failed writing simulation parameters to history stream");
             }
         }
 
@@ -234,9 +235,12 @@ namespace Schemer {
 
             if (should_log_history && step % history_save_interval == 0) {
                 if (!save_current_values(history_stream)) {
-                    throw std::runtime_error("Failed writing history data at step " + std::to_string(step));
+                    throw std::ios_base::failure("Failed writing history data at step " + std::to_string(step));
                 }
                 history_stream.flush();
+                if (!history_stream) {
+                    throw std::ios_base::failure("Failed flushing history data at step " + std::to_string(step));
+                }
             }
 
             current_values = setup.step_matrix * current_values;
@@ -245,9 +249,12 @@ namespace Schemer {
 
         if (should_log_history) {
             if (!save_current_values(history_stream)) {
-                throw std::runtime_error("Failed writing final history data");
+                throw std::ios_base::failure("Failed writing final history data");
             }
             history_stream.flush();
+            if (!history_stream) {
+                throw std::ios_base::failure("Failed flushing final history data");
+            }
         }
 
         if (should_log_progress)
@@ -259,30 +266,30 @@ namespace Schemer {
 
     inline void Runner::save_result(std::ostream &out_stream) const {
         if (!out_stream)
-            throw std::runtime_error("Invalid output stream");
+            throw std::ios_base::failure("Invalid output stream");
 
         if (!save_parameters(out_stream))
-            throw std::runtime_error("Failed to write simulation parameters to output stream");
+            throw std::ios_base::failure("Failed to write simulation parameters to output stream");
 
         out_stream << '#' << "steps: " << steps_taken << '\n';
 
         if (!save_current_values(out_stream))
-            throw std::runtime_error("Failed to write current simulation values to output stream");
+            throw std::ios_base::failure("Failed to write current simulation values to output stream");
 
         out_stream.flush();
         if (!out_stream)
-            throw std::runtime_error("Failed to write simulation result to output stream");
+            throw std::ios_base::failure("Failed to write simulation result to output stream");
     }
 
     inline void Runner::save_result(const std::string &filepath) const {
         std::ofstream out_stream(filepath);
         if (!out_stream) {
-            throw std::runtime_error("Failed to open save file: " + filepath);
+            throw std::ios_base::failure("Failed to open save file: " + filepath);
         }
 
         save_result(out_stream);
         out_stream.close();
         if (out_stream.fail())
-            throw std::runtime_error("Failed to finish writing save file: " + filepath);
+            throw std::ios_base::failure("Failed to finish writing save file: " + filepath);
     }
 } // namespace Schemer

@@ -83,7 +83,7 @@ namespace Schemer {
         }
 
         /**
-         * @brief Sets stability parameter \alpha \in (0, 2].
+         * @brief Sets stability parameter \alpha \in (0, 2).
          * @param value Parameter value (\alpha = 2.0 gives standard Gaussian diffusion).
          * @return Builder& Reference to this builder for chaining.
          */
@@ -448,7 +448,7 @@ namespace Schemer {
         switch (inner_config.reset_input.type) {
             case ResetInput::Type::Index:
                 if (inner_config.reset_input.index < 0 || inner_config.reset_input.index >= inner_config.get_size())
-                    throw std::invalid_argument("reset input index must be in [0, I)");
+                    throw std::invalid_argument("reset input index must be in [0, I+1)");
                 return inner_config.reset_input.index;
             case ResetInput::Type::Zero:
                 return starting_index;
