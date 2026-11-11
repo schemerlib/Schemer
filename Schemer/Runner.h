@@ -155,33 +155,42 @@ namespace Schemer {
 
     inline bool Runner::save_parameters(std::ostream &os) const {
         const auto &config = setup.config;
-
+        const auto write_values = [&os, &config](const auto &values) {
+            for (const auto &value : values)
+                os << value << config.delimiter;
+        };
+        const auto force_scheme_name = [](const ForceSchemeType type) {
+            switch (type) {
+                case ForceSchemeType::SecondOrderCentered: return "SecondOrderCentered";
+                case ForceSchemeType::FirstOrderUpwind: return "FirstOrderUpwind";
+                case ForceSchemeType::SecondOrderUpwind: return "SecondOrderUpwind";
+                default: return "Unknown";
+            }
+        };
         os << '#' << "alpha: " << config.alpha << '\n';
         os << '#' << "beta: " << config.beta << '\n';
         os << '#' << "sigma: " << config.sigma << '\n';
         os << '#' << "length: " << config.length << '\n';
-
         os << '#' << "dt: " << config.dt << '\n';
         os << '#' << "num_intervals: " << config.num_intervals << '\n';
         os << '#' << "theta: " << config.theta << '\n';
-
+        os << '#' << "dx: " << config.get_dx() << '\n';
+        os << '#' << "grid_size: " << config.get_size() << '\n';
         os << '#' << "delimiter: " << config.delimiter << '\n';
         os << '#' << "log_interval_percent: " << config.log_interval_percent << '\n';
         os << '#' << "log_file_path: " << config.log_file_path << '\n';
+
+        os << '#' << "force_scheme: " << force_scheme_name(config.force_scheme) << '\n';
+        os << '#' << "reset_input_rate: " << config.reset_input.rate << '\n';
+
         os << '#' << "initial_values: ";
-        for (Eigen::Index i = 0; i < setup.initial_state.size(); i++)
-            os << setup.initial_state(i) << config.delimiter;
+        write_values(setup.initial_state);
         os << '\n';
-
         os << '#' << "force: ";
-        for (const double force_value: setup.force)
-            os << force_value << config.delimiter;
+        write_values(setup.force);
         os << '\n';
-
         os << '#' << "x_coordinates: ";
-        auto coords = config.get_coordinates(setup.starting_index);
-        for (const double position: coords)
-            os << position << config.delimiter;
+        write_values(config.get_coordinates(setup.starting_index));
         os << '\n';
 
         return static_cast<bool>(os);
