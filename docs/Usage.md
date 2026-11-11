@@ -33,7 +33,7 @@ int main() {
 
     runner.run(500);                     // advance 500 steps, t = 500 * dt
     Eigen::VectorXd p = runner.get_values();
-    runner.save_result("result.tsv");
+    runner.save_result("result.csv");
 }
 ```
 
