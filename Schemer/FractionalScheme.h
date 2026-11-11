@@ -8,6 +8,7 @@
 #include <cmath>
 #include <numbers>
 #include <stdexcept>
+#include <utility>
 #include <vector>
 
 #include <Eigen/Dense>
@@ -28,9 +29,16 @@ namespace Schemer {
          */
         static constexpr double ALPHA_EPSILON = 1e-8;
 
-        explicit FractionalScheme(const Config &config) : config(config) {
-            n = static_cast<int>(std::ceil(config.alpha));
-        }
+        explicit FractionalScheme(Config config)
+            : config(std::move(config)), n(static_cast<int>(std::ceil(this->config.alpha))) {}
+
+        FractionalScheme(const FractionalScheme &) = default;
+
+        FractionalScheme(FractionalScheme &&) = default;
+
+        FractionalScheme &operator=(const FractionalScheme &) = default;
+
+        FractionalScheme &operator=(FractionalScheme &&) = default;
 
         /**
          * @brief Builds the main spatial diffusion matrix.
@@ -65,7 +73,7 @@ namespace Schemer {
         Eigen::MatrixXd build_step_matrix(const std::vector<double> &force, Eigen::Index reset_index) const;
 
     private:
-        const Config &config;
+        Config config;
         int n;
 
         bool is_alpha_one() const {

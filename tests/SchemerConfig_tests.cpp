@@ -1,3 +1,5 @@
+#include <utility>
+
 #include <doctest/doctest.h>
 
 #include <Schemer/Schemer.h>
@@ -41,4 +43,32 @@ TEST_CASE("Config grid helpers") {
     CHECK_EQ(config.get_size(), 5);
     CHECK_EQ(config.get_coordinates(0), (std::vector<double>{0.0, 3.0, 6.0, 9.0, 12.0}));
     CHECK_EQ(config.get_coordinates(2), (std::vector<double>{-6.0, -3.0, 0.0, 3.0, 6.0}));
+}
+
+TEST_CASE("FractionalScheme config and copy/move construction and assignment") {
+    Config config;
+    config.alpha = 1.5;
+    config.num_intervals = 4;
+    const Eigen::MatrixXd expected = FractionalScheme(config).build_diffusion_matrix();
+
+    FractionalScheme copied_config(config);
+    CHECK(copied_config.build_diffusion_matrix().isApprox(expected));
+
+    Config config_to_move = config;
+    FractionalScheme moved_config(std::move(config_to_move));
+    CHECK(moved_config.build_diffusion_matrix().isApprox(expected));
+
+    FractionalScheme copy_constructed(copied_config);
+    CHECK(copy_constructed.build_diffusion_matrix().isApprox(expected));
+
+    FractionalScheme move_constructed(std::move(copy_constructed));
+    CHECK(move_constructed.build_diffusion_matrix().isApprox(expected));
+
+    FractionalScheme copy_assigned(config);
+    copy_assigned = moved_config;
+    CHECK(copy_assigned.build_diffusion_matrix().isApprox(expected));
+
+    FractionalScheme move_assigned(config);
+    move_assigned = std::move(copy_assigned);
+    CHECK(move_assigned.build_diffusion_matrix().isApprox(expected));
 }

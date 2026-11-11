@@ -1,7 +1,8 @@
-#include <doctest/doctest.h>
-
 #include <stdexcept>
+#include <utility>
 #include <vector>
+
+#include <doctest/doctest.h>
 
 #include <Schemer/Schemer.h>
 using namespace Schemer;
@@ -21,6 +22,24 @@ TEST_CASE("Builder basic construction") {
             .set_theta(0.5);
 
     CHECK_NOTHROW(builder.build());
+}
+
+TEST_CASE("Builder copy and move construction and assignment") {
+    const Builder original = get_valid_builder();
+
+    Builder copy_constructed(original);
+    CHECK_EQ(copy_constructed.get_config().alpha, original.get_config().alpha);
+
+    Builder move_constructed(std::move(copy_constructed));
+    CHECK_EQ(move_constructed.get_config().alpha, original.get_config().alpha);
+
+    Builder copy_assigned;
+    copy_assigned = original;
+    CHECK_EQ(copy_assigned.get_config().alpha, original.get_config().alpha);
+
+    Builder move_assigned;
+    move_assigned = std::move(copy_assigned);
+    CHECK_EQ(move_assigned.get_config().alpha, original.get_config().alpha);
 }
 
 TEST_CASE("Builder set_config") {

@@ -1,5 +1,3 @@
-#include <doctest/doctest.h>
-
 #include <cstdio>
 #include <fstream>
 #include <sstream>
@@ -7,6 +5,8 @@
 #include <string>
 #include <utility>
 #include <vector>
+
+#include <doctest/doctest.h>
 
 #include <Schemer/Schemer.h>
 using namespace Schemer;
@@ -17,7 +17,6 @@ static Setup make_setup() {
             .set_num_intervals(4)
             .set_length(4.0)
             .set_dt(0.01)
-            .set_log_interval_percent(0.0)
             .build_setup();
 }
 
@@ -116,22 +115,9 @@ TEST_CASE (
 
     runner.run(100);
 
-    // std::ofstream log_file(log_filepath, std::ios::app);
-    // log_file << "Test progress log file" << std::endl;
-    // log_file.close();
-
     std::ifstream file(log_filepath);
 
     CHECK(file.is_open());
-    // std::string line;
-    // std::cout << "[test] Log file opened: " << file.is_open() << std::endl;
-    // std::cout << "[test] Log file path: " << log_filepath << std::endl;
-    // std:: cout << "[test] Log file contents:" << std::endl;
-    // while (std::getline(file, line)) {
-    //     std::cout << line << '\n';
-    // }
-    // std::cout << "[test]" << std::endl;
-
 
     file.close();
     std::remove(log_filepath.c_str());
@@ -161,22 +147,44 @@ TEST_CASE (
 )
  {
     Setup setup = make_setup();
-    Runner runner1(setup);
-    runner1.run(2);
+    Runner from_lvalue(setup);
+    CHECK(from_lvalue.get_values().isApprox(setup.initial_state));
+
+    Runner from_rvalue{Setup(setup)};
+    CHECK(from_rvalue.get_values().isApprox(setup.initial_state));
+
+    from_lvalue.run(2);
 
     SUBCASE("Copy constructor creates independent instance") {
-        Runner runner2(runner1);
-        CHECK(runner2.get_values().isApprox(runner1.get_values()));
+        Runner runner2(from_lvalue);
+        CHECK(runner2.get_values().isApprox(from_lvalue.get_values()));
 
-        runner1.run(3);
-        CHECK_FALSE(runner2.get_values().isApprox(runner1.get_values()));
+        from_lvalue.run(3);
+        CHECK_FALSE(runner2.get_values().isApprox(from_lvalue.get_values()));
     }
 
     SUBCASE("Move constructor transfers state successfully") {
-        Eigen::VectorXd expected = runner1.get_values();
-        Runner runner2(std::move(runner1));
+        const Eigen::VectorXd expected = from_lvalue.get_values();
+        Runner runner2(std::move(from_lvalue));
 
         CHECK(runner2.get_values().isApprox(expected));
+    }
+
+    SUBCASE("Copy assignment copies state") {
+        Runner assigned(make_setup());
+        assigned = from_lvalue;
+
+        CHECK(assigned.get_values().isApprox(from_lvalue.get_values()));
+        from_lvalue.run(1);
+        CHECK_FALSE(assigned.get_values().isApprox(from_lvalue.get_values()));
+    }
+
+    SUBCASE("Move assignment transfers state") {
+        const Eigen::VectorXd expected = from_lvalue.get_values();
+        Runner assigned(make_setup());
+        assigned = std::move(from_lvalue);
+
+        CHECK(assigned.get_values().isApprox(expected));
     }
 }
 
@@ -192,7 +200,7 @@ TEST_CASE (
     }
 
     SUBCASE("Get_values_vector works") {
-        std::vector<double> expected = {values.begin(), values.end()};
+        const std::vector<double> expected = {values.begin(), values.end()};
         CHECK_EQ(runner.get_values_vector(), expected);
     }
 }

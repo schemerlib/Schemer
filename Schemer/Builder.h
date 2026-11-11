@@ -67,6 +67,16 @@ namespace Schemer {
         Eigen::Index compute_reset_index(Eigen::Index starting_index) const;
 
     public:
+        Builder() = default;
+
+        Builder(const Builder &) = default;
+
+        Builder &operator=(const Builder &) = default;
+
+        Builder(Builder &&) = default;
+
+        Builder &operator=(Builder &&) = default;
+
         /**
         * @brief getter for config
         * @return Config Inner config struct with current parameters.
