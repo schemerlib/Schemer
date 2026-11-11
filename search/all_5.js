@@ -10,7 +10,7 @@ var searchData=
   ['forceinput_7',['ForceInput',['../structSchemer_1_1ForceInput.html',1,'Schemer']]],
   ['forceschemetype_8',['ForceSchemeType',['../structForceSchemeType.html',1,'']]],
   ['format_9',['Your own format',['../usage.html#autotoc_md10',1,'']]],
-  ['fractionalscheme_10',['FractionalScheme',['../classSchemer_1_1FractionalScheme.html',1,'Schemer::FractionalScheme'],['../classSchemer_1_1FractionalScheme.html#af5524fc49f6d8877d6966abaa9fa8ea4',1,'Schemer::FractionalScheme::FractionalScheme()']]],
+  ['fractionalscheme_10',['FractionalScheme',['../classSchemer_1_1FractionalScheme.html',1,'Schemer']]],
   ['fractionalscheme_2eh_11',['FractionalScheme.h',['../FractionalScheme_8h.html',1,'']]],
   ['function_12',['Function',['../structSchemer_1_1ForceInput.html#ab1f0b133f1c1ac47a946e113e764e987a86408593c34af77fdd90df932f8b5261',1,'Schemer::ForceInput']]]
 ];

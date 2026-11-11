@@ -135,8 +135,8 @@ document.addEventListener('DOMContentLoaded',() => { initNavTree('classSchemer_1
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:af5524fc49f6d8877d6966abaa9fa8ea4" id="r_af5524fc49f6d8877d6966abaa9fa8ea4"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#af5524fc49f6d8877d6966abaa9fa8ea4">FractionalScheme</a> (const <a class="el" href="structSchemer_1_1Config.html">Config</a> &amp;config)</td></tr>
-<tr class="memdesc:af5524fc49f6d8877d6966abaa9fa8ea4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct a new <a class="el" href="classSchemer_1_1FractionalScheme.html" title="Builds diffusion and force matrices for time stepping.">FractionalScheme</a> object with configuration settings.  <br /></td></tr>
+<tr class="memitem:af5524fc49f6d8877d6966abaa9fa8ea4" id="r_af5524fc49f6d8877d6966abaa9fa8ea4"><td class="memItemLeft"><a id="af5524fc49f6d8877d6966abaa9fa8ea4" name="af5524fc49f6d8877d6966abaa9fa8ea4"></a>
+&#160;</td><td class="memItemRight"><b>FractionalScheme</b> (const <a class="el" href="structSchemer_1_1Config.html">Config</a> &amp;config)</td></tr>
 <tr class="memitem:aa11ea04c510a93a095a62ea44e162e34" id="r_aa11ea04c510a93a095a62ea44e162e34"><td class="memItemLeft">Eigen::MatrixXd&#160;</td><td class="memItemRight"><a class="el" href="#aa11ea04c510a93a095a62ea44e162e34">build_diffusion_matrix</a> () const</td></tr>
 <tr class="memdesc:aa11ea04c510a93a095a62ea44e162e34"><td class="mdescLeft">&#160;</td><td class="mdescRight">Builds the main spatial diffusion matrix.  <br /></td></tr>
 <tr class="memitem:af28bc74bdd2b06d6c4bb0113930caf5c" id="r_af28bc74bdd2b06d6c4bb0113930caf5c"><td class="memItemLeft">Eigen::MatrixXd&#160;</td><td class="memItemRight"><a class="el" href="#af28bc74bdd2b06d6c4bb0113930caf5c">build_force_matrix</a> (const std::vector&lt; double &gt; &amp;force) const</td></tr>
@@ -155,41 +155,7 @@ static constexpr double&#160;</td><td class="memItemRight"><b>ALPHA_EPSILON</b> 
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Builds diffusion and force matrices for time stepping. </p>
 <p>Calculates fractional derivative matrices based on alpha, beta, and grid spacing. </p>
-</div><a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="af5524fc49f6d8877d6966abaa9fa8ea4" name="af5524fc49f6d8877d6966abaa9fa8ea4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af5524fc49f6d8877d6966abaa9fa8ea4">&#9670;&#160;</a></span>FractionalScheme()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">Schemer::FractionalScheme::FractionalScheme </td>
-          <td>(</td>
-          <td class="paramtype">const <a class="el" href="structSchemer_1_1Config.html">Config</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>config</em></span></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel explicit">explicit</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Construct a new <a class="el" href="classSchemer_1_1FractionalScheme.html" title="Builds diffusion and force matrices for time stepping.">FractionalScheme</a> object with configuration settings. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">config</td><td>Reference to the <a class="el" href="structSchemer_1_1Config.html" title="Holds all simulation settings, physical parameters, grid specs, and file output options.">Config</a> object containing simulation settings. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
+</div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
 <a id="aa11ea04c510a93a095a62ea44e162e34" name="aa11ea04c510a93a095a62ea44e162e34"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aa11ea04c510a93a095a62ea44e162e34">&#9670;&#160;</a></span>build_diffusion_matrix()</h2>
 
@@ -214,7 +180,6 @@ static constexpr double&#160;</td><td class="memItemRight"><b>ALPHA_EPSILON</b> 
 </div><div class="memdoc">
 
 <p>Builds the main spatial diffusion matrix. </p>
-<p>Calls build_M1(), build_M2(), or build_M3() depending on the value of \alpha.</p>
 <dl class="section return"><dt>Returns</dt><dd>Eigen::MatrixXd The spatial diffusion matrix. </dd></dl>
 
 </div>
