@@ -32,9 +32,9 @@ namespace Schemer {
         Config inner_config;
 
         /**
-         * @brief Checks if all settings and parameters are valid before building.
+         * @brief Checks if all simple parameters are valid before building.
          */
-        void validate_parameters() const;
+        void validate_simple() const;
 
         /**
          * @brief Calculates grid point index corresponding to origin x = 0.0.
@@ -83,7 +83,7 @@ namespace Schemer {
         }
 
         /**
-         * @brief Sets stability parameter \alpha \in (0, 2].
+         * @brief Sets stability parameter \alpha \in (0, 2).
          * @param value Parameter value (\alpha = 2.0 gives standard Gaussian diffusion).
          * @return Builder& Reference to this builder for chaining.
          */
@@ -330,7 +330,7 @@ namespace Schemer {
         Setup build_setup() const;
     };
 
-    inline void Builder::validate_parameters() const {
+    inline void Builder::validate_simple() const {
         if (inner_config.alpha <= 0.0 || inner_config.alpha >= 2.0) throw std::invalid_argument(
             "alpha must be in (0, 2)");
         if (std::abs(inner_config.beta) > 1.0) throw std::invalid_argument("beta must be in [-1, 1]");
@@ -448,7 +448,7 @@ namespace Schemer {
         switch (inner_config.reset_input.type) {
             case ResetInput::Type::Index:
                 if (inner_config.reset_input.index < 0 || inner_config.reset_input.index >= inner_config.get_size())
-                    throw std::invalid_argument("reset input index must be in [0, I)");
+                    throw std::invalid_argument("reset input index must be in [0, I+1)");
                 return inner_config.reset_input.index;
             case ResetInput::Type::Zero:
                 return starting_index;
@@ -460,7 +460,7 @@ namespace Schemer {
 
 
     inline Setup Builder::build_setup() const {
-        validate_parameters();
+        validate_simple();
 
         const Eigen::Index starting_index = compute_starting_index();
         const Eigen::Index reset_index = compute_reset_index(starting_index);

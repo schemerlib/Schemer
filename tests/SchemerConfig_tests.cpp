@@ -13,7 +13,7 @@ TEST_CASE("Config default values") {
     CHECK_EQ(config.num_intervals, 1000);
     CHECK_EQ(config.dt, 0.001);
     CHECK_EQ(config.theta, 0.5);
-    CHECK_EQ(config.log_interval_percent, 5.0);
+    CHECK_EQ(config.log_interval_percent, 0.0);
     CHECK_EQ(config.log_file_path, "schemer_progress.log");
     CHECK_EQ(config.delimiter, "\t");
     CHECK_EQ(config.force_scheme, ForceSchemeType::SecondOrderCentered);

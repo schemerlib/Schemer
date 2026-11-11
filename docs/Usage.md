@@ -13,7 +13,7 @@ All classes live in the `Schemer` namespace. A typical program has three steps:
 2. Build a Schemer::Runner and advance it in time with Schemer::Runner::run.
 3. Read the state or write it to a file or stream.
 
-Complete, runnable programs are in the `examples/` directory and are shown at the [end of this page](#usage_examples).
+Complete, runnable programs are in the `examples/` directory.
 
 [TOC]
 
@@ -28,7 +28,6 @@ int main() {
             .set_length(20.0)
             .set_num_intervals(200)
             .set_dt(0.01)
-            .set_log_interval_percent(0)
             .build();
 
     runner.run(500);                     // advance 500 steps, t = 500 * dt
@@ -45,20 +44,20 @@ Every Schemer::Builder setter returns a reference to the builder, so calls can b
 
 ## Physical parameters
 
-| Method | Field | Default | Valid range | Meaning |
-|--------|-------|---------|-------------|---------|
-| `set_alpha(double)` | Schemer::Config::alpha | `0.0` (must be set) | \f$(0, 2)\f$ | Stability index. Smaller values give heavier tails. |
-| `set_beta(double)` | Schemer::Config::beta | `0.0` | \f$[-1, 1]\f$ | Skewness. Must be `0` when \f$\alpha = 1\f$. |
-| `set_sigma(double)` | Schemer::Config::sigma | `1.0` | \f$\ge 0\f$ | Scale (diffusion coefficient \f$K\f$). |
+| Method              | Field                  | Default             | Valid range   | Meaning                                             |
+|---------------------|------------------------|---------------------|---------------|-----------------------------------------------------|
+| `set_alpha(double)` | Schemer::Config::alpha | `0.0` (must be set) | \f$(0, 2)\f$  | Stability index. Smaller values give heavier tails. |
+| `set_beta(double)`  | Schemer::Config::beta  | `0.0`               | \f$[-1, 1]\f$ | Skewness. Must be `0` when \f$\alpha = 1\f$.        |
+| `set_sigma(double)` | Schemer::Config::sigma | `1.0`               | \f$\ge 0\f$   | Scale (diffusion coefficient \f$K\f$).              |
 
 ## Grid and time stepping
 
-| Method | Field | Default | Meaning |
-|--------|-------|---------|---------|
-| `set_length(double)` | Schemer::Config::length | `40.0` | Length of the spatial domain. |
-| `set_num_intervals(Eigen::Index)` | Schemer::Config::num_intervals | `1000` | Number of intervals \f$N\f$. The grid has \f$N + 1\f$ points. |
-| `set_dt(double)` | Schemer::Config::dt | `0.001` | Time step \f$\Delta t\f$. A warning is printed if `dt > 1`. |
-| `set_theta(double)` | Schemer::Config::theta | `0.5` | Time scheme: `0.0` explicit, `0.5` Crank–Nicolson, `1.0` implicit. |
+| Method                            | Field                          | Default | Meaning                                                            |
+|-----------------------------------|--------------------------------|---------|--------------------------------------------------------------------|
+| `set_length(double)`              | Schemer::Config::length        | `40.0`  | Length of the spatial domain.                                      |
+| `set_num_intervals(Eigen::Index)` | Schemer::Config::num_intervals | `1000`  | Number of intervals \f$N\f$. The grid has \f$N + 1\f$ points.      |
+| `set_dt(double)`                  | Schemer::Config::dt            | `0.001` | Time step \f$\Delta t\f$. A warning is printed if `dt > 1`.        |
+| `set_theta(double)`               | Schemer::Config::theta         | `0.5`   | Time scheme: `0.0` explicit, `0.5` Crank–Nicolson, `1.0` implicit. |
 
 The grid spacing is `Config::get_dx() = length / num_intervals`. The number of points is `Config::get_size() = num_intervals + 1`.
 
@@ -88,7 +87,7 @@ The vector must have exactly `num_intervals + 1` elements.
 The equation contains the term \f$\partial_x \big(F(x) P(x,t)\big)\f$. The force \f$F\f$ can be given in three ways. The last one you set is used, and a warning is printed when it replaces an earlier one.
 
 ```cpp
-builder.set_drift(1.0);                                     // constant force
+builder.set_force(1.0);                                     // constant force
 builder.set_force([](double x) { return -2.0 * x; });       // function F(x)
 builder.set_force(std::vector<double>(N + 1, 0.0));         // one value per grid point
 ```
@@ -112,11 +111,11 @@ builder.set_reset_index(150);     // or reset to a given grid index
 
 ## Output and logging options
 
-| Method | Default | Meaning |
-|--------|---------|---------|
-| `set_delimiter(std::string)` | `"\t"` | Column separator used in result and history output. |
-| `set_log_interval_percent(double)` | `5.0` | Progress is logged every that many percent of a `run()` call. `0` disables logging. |
-| `set_log_file_path(std::string)` | `"schemer_progress.log"` | File for progress messages. It is overwritten by each `run()` call. |
+| Method                             | Default                  | Meaning                                                                             |
+|------------------------------------|--------------------------|-------------------------------------------------------------------------------------|
+| `set_delimiter(std::string)`       | `"\t"`                   | Column separator used in result and history output.                                 |
+| `set_log_interval_percent(double)` | `5.0`                    | Progress is logged every that many percent of a `run()` call. `0` disables logging. |
+| `set_log_file_path(std::string)`   | `"schemer_progress.log"` | File for progress messages. It is overwritten by each `run()` call.                 |
 
 ## Working with Config directly
 
@@ -137,14 +136,14 @@ You can also copy a Builder (`Schemer::Builder copy(base);`) to branch off varia
 
 `Builder::build()` returns a ready-to-use Schemer::Runner. If you need the precomputed data, call `Builder::build_setup()` instead. It returns a Schemer::Setup with the config, step matrix, initial state, origin index and force. You can then construct the runner yourself: `Schemer::Runner runner(setup);`.
 
-| Method | Meaning |
-|--------|---------|
-| `run(int steps)` | Advance by `steps` time steps. |
+| Method                                                | Meaning                                                          |
+|-------------------------------------------------------|------------------------------------------------------------------|
+| `run(int steps)`                                      | Advance by `steps` time steps.                                   |
 | `run(int steps, std::ostream &history, int interval)` | Advance and write the state to `history` every `interval` steps. |
-| `reset()` | Go back to step 0 and the initial state. |
-| `get_values()` | Current state as `Eigen::VectorXd`. |
-| `get_values_vector()` | Current state as `std::vector<double>`. |
-| `get_setup()` | Copy of the Schemer::Setup. |
+| `reset()`                                             | Go back to step 0 and the initial state.                         |
+| `get_values()`                                        | Current state as `Eigen::VectorXd`.                              |
+| `get_values_vector()`                                 | Current state as `std::vector<double>`.                          |
+| `get_setup()`                                         | Copy of the Schemer::Setup.                                      |
 
 Calls to `run()` add up: `run(300); run(200);` gives the same state as `run(500);`.
 
@@ -157,22 +156,33 @@ Calls to `run()` add up: `run(300); run(200);` gives the same state as `run(500)
 ```
 #alpha: 1.5
 #beta: 0
-...
+#sigma: 1
+#length: 40
+#dt: 0.001
+#num_intervals: 1000
+#theta: 0.5
+#dx: 0.04
+#grid_size: 1001
+#delimiter: <configured delimiter>
+#log_interval_percent: 0
+#log_file_path: schemer_progress.log
+#force_scheme: SecondOrderCentered
+#reset_input_rate: 0
 #initial_values: <N+1 values>
-#force_variant: <drift value, or N+1 force values>
+#force: <N+1 evaluated force values>
 #x_coordinates: <N+1 positions>
 #steps: 500
 <N+1 values of the current state>
 ```
 
-Header lines start with `#`, and values are separated by the configured delimiter. Each line of values also ends with a delimiter.
+The header records the scalar configuration parameters, derived grid spacing and size, selected force scheme, and reset rate. `values_input_vector` is included only when custom initial values are selected; input-type labels and other configured input values are not written. The `initial_values`, evaluated `force`, and `x_coordinates` rows are always included. Vector values are separated by the configured delimiter, and each vector row ends with that delimiter. The completed step count and current state follow the header.
 
 ## History files
 
 `run(steps, stream, interval)` first writes the same `#` header (without `#steps`), but only if the stream is still empty. It then writes one line per saved state: at steps `0, interval, 2*interval, …`, plus a final line after the last step. You can call `run()` several times with the same stream to append more rows. The first row of each later call repeats the last state of the previous call.
 
 ```cpp
-std::ofstream history("history.csv");
+std::ofstream history("history.tsv");
 runner.run(1000, history, 50);
 ```
 

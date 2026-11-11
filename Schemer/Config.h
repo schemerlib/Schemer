@@ -182,7 +182,7 @@ namespace Schemer {
          *
          * Completion percentage step between logging progress.
          */
-        double log_interval_percent = 5.0;
+        double log_interval_percent = 0.0;
 
         /**
          * @brief Number of grid intervals (N).

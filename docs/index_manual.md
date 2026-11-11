@@ -23,15 +23,15 @@ The process described is a Lévy flight inside any external potential (or with a
 
 Every symbol in the equation corresponds to one setting of Schemer::Builder (stored in Schemer::Config):
 
-| Symbol | Meaning | Builder method | Config field | Range / default |
-|--------|---------|----------------|--------------|-----------------|
-| \f$\alpha\f$ | Stability index, the order of the fractional derivative | `set_alpha()` | Schemer::Config::alpha | \f$(0, 2)\f$, required |
-| \f$\beta\f$ | Skewness of the fractional operator | `set_beta()` | Schemer::Config::beta | \f$[-1, 1]\f$, default \f$0\f$ (must be \f$0\f$ for \f$\alpha = 1\f$) |
-| \f$K\f$ | Scale (fractional diffusion coefficient) | `set_sigma()` | Schemer::Config::sigma | \f$\ge 0\f$, default \f$1\f$ |
-| \f$F(x)\f$ | External force | `set_drift()`, `set_force()` | Schemer::Config::force_input | default \f$F \equiv 0\f$ |
-| \f$r\f$ | Resetting rate | `set_reset_rate()` | Schemer::ResetInput::rate | \f$\ge 0\f$, default \f$0\f$ (off) |
-| \f$x_r\f$ | Resetting position | `set_reset_index_zero()`, `set_reset_index()` | Schemer::Config::reset_input | default \f$x_r = 0\f$ |
-| \f$P(x,0)\f$ | Initial condition | `set_initial_conditions()` | Schemer::Config::values_input | default \f$\delta(x)\f$ |
+| Symbol       | Meaning                                                 | Builder method                                | Config field                  | Range / default                                                       |
+|--------------|---------------------------------------------------------|-----------------------------------------------|-------------------------------|-----------------------------------------------------------------------|
+| \f$\alpha\f$ | Stability index, the order of the fractional derivative | `set_alpha()`                                 | Schemer::Config::alpha        | \f$(0, 2)\f$, required                                                |
+| \f$\beta\f$  | Skewness of the fractional operator                     | `set_beta()`                                  | Schemer::Config::beta         | \f$[-1, 1]\f$, default \f$0\f$ (must be \f$0\f$ for \f$\alpha = 1\f$) |
+| \f$K\f$      | Scale (fractional diffusion coefficient)                | `set_sigma()`                                 | Schemer::Config::sigma        | \f$\ge 0\f$, default \f$1\f$                                          |
+| \f$F(x)\f$   | External force                                          | `set_force()`                                 | Schemer::Config::force_input  | default \f$F \equiv 0\f$                                              |
+| \f$r\f$      | Resetting rate                                          | `set_reset_rate()`                            | Schemer::ResetInput::rate     | \f$\ge 0\f$, default \f$0\f$ (off)                                    |
+| \f$x_r\f$    | Resetting position                                      | `set_reset_index_zero()`, `set_reset_index()` | Schemer::Config::reset_input  | default \f$x_r = 0\f$                                                 |
+| \f$P(x,0)\f$ | Initial condition                                       | `set_initial_conditions()`                    | Schemer::Config::values_input | default \f$\delta(x)\f$                                               |
 
 # Numerical method {#main_method}
 
@@ -55,7 +55,7 @@ int main() {
             .set_alpha(1.5)      // α
             .set_beta(0.0)       // β
             .set_sigma(1.0)      // K
-            .set_drift(0.5)      // F(x) = 0.5
+            .set_force(0.5)      // F(x) = 0.5
             .set_length(20.0)
             .set_num_intervals(200)
             .set_dt(0.01)

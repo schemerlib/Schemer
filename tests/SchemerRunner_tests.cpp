@@ -64,6 +64,23 @@ TEST_CASE (
         std::string output = history_stream.str();
         CHECK_FALSE(output.empty());
         CHECK_NE(output.find("#alpha: 1.5"), std::string::npos);
+        for (const char *field : {
+                 "#beta:", "#sigma:", "#length:", "#dt:", "#num_intervals:", "#theta:",
+                 "#dx:", "#grid_size:", "#delimiter:", "#log_interval_percent:", "#log_file_path:",
+                 "#force_scheme:", "#reset_input_rate:",
+                 "#initial_values:", "#force:", "#x_coordinates:"
+             }) {
+            CHECK_NE(output.find(field), std::string::npos);
+        }
+        CHECK_EQ(output.find("#zero_input_type:"), std::string::npos);
+        CHECK_EQ(output.find("#values_input_type:"), std::string::npos);
+        CHECK_EQ(output.find("#force_input_type:"), std::string::npos);
+        CHECK_EQ(output.find("#reset_input_type:"), std::string::npos);
+        CHECK_EQ(output.find("#zero_input_index:"), std::string::npos);
+        CHECK_EQ(output.find("#values_input_vector:"), std::string::npos);
+        CHECK_EQ(output.find("#force_input_vector:"), std::string::npos);
+        CHECK_EQ(output.find("#reset_input_index:"), std::string::npos);
+        CHECK_EQ(output.find("#force_input_value:"), std::string::npos);
     }
 
     SUBCASE("Saving result to disk") {
