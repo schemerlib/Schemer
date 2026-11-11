@@ -13,7 +13,7 @@ All classes live in the `Schemer` namespace. A typical program has three steps:
 2. Build a Schemer::Runner and advance it in time with Schemer::Runner::run.
 3. Read the state or write it to a file or stream.
 
-Complete, runnable programs are in the `examples/` directory and are shown [below](#usage_examples).
+Complete, runnable programs are in the `examples/` directory and are shown at the [bottom of the page](@ref%20usage_examples).
 
 [TOC]
 
@@ -28,12 +28,11 @@ int main() {
             .set_length(20.0)
             .set_num_intervals(200)
             .set_dt(0.01)
-            .set_log_interval_percent(0)
             .build();
 
     runner.run(500);                     // advance 500 steps, t = 500 * dt
     Eigen::VectorXd p = runner.get_values();
-    runner.save_result("result.csv");
+    runner.save_result("result.tsv");
 }
 ```
 
@@ -165,7 +164,7 @@ Calls to `run()` add up: `run(300); run(200);` gives the same state as `run(500)
 #dx: 0.04
 #grid_size: 1001
 #delimiter: <configured delimiter>
-#log_interval_percent: 5
+#log_interval_percent: 0
 #log_file_path: schemer_progress.log
 #force_scheme: SecondOrderCentered
 #reset_input_rate: 0
@@ -183,7 +182,7 @@ The header records the scalar configuration parameters, derived grid spacing and
 `run(steps, stream, interval)` first writes the same `#` header (without `#steps`), but only if the stream is still empty. It then writes one line per saved state: at steps `0, interval, 2*interval, …`, plus a final line after the last step. You can call `run()` several times with the same stream to append more rows. The first row of each later call repeats the last state of the previous call.
 
 ```cpp
-std::ofstream history("history.csv");
+std::ofstream history("history.tsv");
 runner.run(1000, history, 50);
 ```
 
