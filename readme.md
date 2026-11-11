@@ -12,7 +12,6 @@ time steps, and saving results.
 - [Features](#features)
 - [Requirements](#requirements)
 - [Installation](#installation)
-- [Releases](#releases)
 - [Quick start](#quick-start)
 - [Configuration](#configuration)
 - [Building and running tests](#building-and-running-tests)
