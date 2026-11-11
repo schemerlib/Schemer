@@ -137,7 +137,7 @@ document.addEventListener('DOMContentLoaded',() => { initNavTree('usage.html',''
 <li>Build a <a class="el" href="classSchemer_1_1Runner.html" title="Manages simulation progress, time stepping, and file saving.">Schemer::Runner</a> and advance it in time with <a class="el" href="classSchemer_1_1Runner.html#a3479d5dea34014dfeafc59763234b8b9" title="Advances the simulation forward by a specified number of time steps with option to save history.">Schemer::Runner::run</a>.</li>
 <li>Read the state or write it to a file or stream.</li>
 </ol>
-<p>Complete, runnable programs are in the <span class="tt">examples/</span> directory and are shown <a class="el" href="#usage_examples" title="Examples">below</a>below.</p>
+<p>Complete, runnable programs are in the <span class="tt">examples/</span> directory and are shown at the [bottom of the page](20usage_examples).</p>
 <h1 class="doxsection"><a class="anchor" id="usage_quick_start"></a>
 Quick start</h1>
 <div class="fragment"><div class="line"><span class="preprocessor">#include &lt;<a class="code" href="Schemer_8h.html">Schemer/Schemer.h</a>&gt;</span></div>
@@ -148,17 +148,15 @@ Quick start</h1>
 <div class="line">            .<a class="code hl_function" href="classSchemer_1_1Builder.html#a8026c280a6138714a6521162fdfef198">set_length</a>(20.0)</div>
 <div class="line">            .<a class="code hl_function" href="classSchemer_1_1Builder.html#aa66e0e3e0bf3253b814d07d9f903c8b3">set_num_intervals</a>(200)</div>
 <div class="line">            .<a class="code hl_function" href="classSchemer_1_1Builder.html#a3155f9e3398454b3fb0546dd153fb748">set_dt</a>(0.01)</div>
-<div class="line">            .<a class="code hl_function" href="classSchemer_1_1Builder.html#a73f3b3d04dfbef57a3e10a23eb597270">set_log_interval_percent</a>(0)</div>
 <div class="line">            .<a class="code hl_function" href="classSchemer_1_1Builder.html#a46e1e6028227724688240086e40dc8ca">build</a>();</div>
 <div class="line"> </div>
 <div class="line">    runner.<a class="code hl_function" href="classSchemer_1_1Runner.html#a3479d5dea34014dfeafc59763234b8b9">run</a>(500);                     <span class="comment">// advance 500 steps, t = 500 * dt</span></div>
 <div class="line">    Eigen::VectorXd p = runner.<a class="code hl_function" href="classSchemer_1_1Runner.html#a46d3ddd127e73b534289f66a0c200543">get_values</a>();</div>
-<div class="line">    runner.<a class="code hl_function" href="classSchemer_1_1Runner.html#a818f4cc3bfd44abb91982d924aa07f6c">save_result</a>(<span class="stringliteral">&quot;result.csv&quot;</span>);</div>
+<div class="line">    runner.<a class="code hl_function" href="classSchemer_1_1Runner.html#a818f4cc3bfd44abb91982d924aa07f6c">save_result</a>(<span class="stringliteral">&quot;result.tsv&quot;</span>);</div>
 <div class="line">}</div>
 <div class="ttc" id="aclassSchemer_1_1Builder_html"><div class="ttname"><a href="classSchemer_1_1Builder.html">Schemer::Builder</a></div><div class="ttdoc">Configures simulation settings step-by-step and creates a runner.</div><div class="ttdef"><b>Definition</b> Builder.h:29</div></div>
 <div class="ttc" id="aclassSchemer_1_1Builder_html_a3155f9e3398454b3fb0546dd153fb748"><div class="ttname"><a href="classSchemer_1_1Builder.html#a3155f9e3398454b3fb0546dd153fb748">Schemer::Builder::set_dt</a></div><div class="ttdeci">Builder &amp; set_dt(double value)</div><div class="ttdoc">Sets time step size (\Delta t).</div><div class="ttdef"><b>Definition</b> Builder.h:179</div></div>
 <div class="ttc" id="aclassSchemer_1_1Builder_html_a46e1e6028227724688240086e40dc8ca"><div class="ttname"><a href="classSchemer_1_1Builder.html#a46e1e6028227724688240086e40dc8ca">Schemer::Builder::build</a></div><div class="ttdeci">Runner build() const</div><div class="ttdoc">Builds and returns a fully configured simulation runner ready to execute.</div><div class="ttdef"><b>Definition</b> Builder.h:322</div></div>
-<div class="ttc" id="aclassSchemer_1_1Builder_html_a73f3b3d04dfbef57a3e10a23eb597270"><div class="ttname"><a href="classSchemer_1_1Builder.html#a73f3b3d04dfbef57a3e10a23eb597270">Schemer::Builder::set_log_interval_percent</a></div><div class="ttdeci">Builder &amp; set_log_interval_percent(double value)</div><div class="ttdoc">Sets completion progress percentage required between log updates.</div><div class="ttdef"><b>Definition</b> Builder.h:219</div></div>
 <div class="ttc" id="aclassSchemer_1_1Builder_html_a8026c280a6138714a6521162fdfef198"><div class="ttname"><a href="classSchemer_1_1Builder.html#a8026c280a6138714a6521162fdfef198">Schemer::Builder::set_length</a></div><div class="ttdeci">Builder &amp; set_length(double value)</div><div class="ttdoc">Sets physical length of 1D spatial domain (L).</div><div class="ttdef"><b>Definition</b> Builder.h:120</div></div>
 <div class="ttc" id="aclassSchemer_1_1Builder_html_aa66e0e3e0bf3253b814d07d9f903c8b3"><div class="ttname"><a href="classSchemer_1_1Builder.html#aa66e0e3e0bf3253b814d07d9f903c8b3">Schemer::Builder::set_num_intervals</a></div><div class="ttdeci">Builder &amp; set_num_intervals(Eigen::Index value)</div><div class="ttdoc">Sets the total number of grid intervals (N).</div><div class="ttdef"><b>Definition</b> Builder.h:189</div></div>
 <div class="ttc" id="aclassSchemer_1_1Builder_html_ab12e90dae347c5f96efbb0b611841a5b"><div class="ttname"><a href="classSchemer_1_1Builder.html#ab12e90dae347c5f96efbb0b611841a5b">Schemer::Builder::set_alpha</a></div><div class="ttdeci">Builder &amp; set_alpha(double value)</div><div class="ttdoc">Sets stability parameter \alpha \in (0, 2).</div><div class="ttdef"><b>Definition</b> Builder.h:90</div></div>
@@ -287,7 +285,7 @@ Result files</h2>
 <div class="line">#dx: 0.04</div>
 <div class="line">#grid_size: 1001</div>
 <div class="line">#delimiter: &lt;configured delimiter&gt;</div>
-<div class="line">#log_interval_percent: 5</div>
+<div class="line">#log_interval_percent: 0</div>
 <div class="line">#log_file_path: schemer_progress.log</div>
 <div class="line">#force_scheme: SecondOrderCentered</div>
 <div class="line">#reset_input_rate: 0</div>
@@ -300,7 +298,7 @@ Result files</h2>
 <h2 class="doxsection"><a class="anchor" id="autotoc_md9"></a>
 History files</h2>
 <p><span class="tt">run(steps, stream, interval)</span> first writes the same <span class="tt">#</span> header (without <span class="tt">#steps</span>), but only if the stream is still empty. It then writes one line per saved state: at steps <span class="tt">0, interval, 2*interval, …</span>, plus a final line after the last step. You can call <span class="tt">run()</span> several times with the same stream to append more rows. The first row of each later call repeats the last state of the previous call.</p>
-<div class="fragment"><div class="line">std::ofstream history(<span class="stringliteral">&quot;history.csv&quot;</span>);</div>
+<div class="fragment"><div class="line">std::ofstream history(<span class="stringliteral">&quot;history.tsv&quot;</span>);</div>
 <div class="line">runner.<a class="code hl_function" href="classSchemer_1_1Runner.html#a3479d5dea34014dfeafc59763234b8b9">run</a>(1000, history, 50);</div>
 </div><!-- fragment --><h2 class="doxsection"><a class="anchor" id="autotoc_md10"></a>
 Your own format</h2>
@@ -359,6 +357,7 @@ Simple usage</h2>
 <div class="line"> </div>
 <div class="line">    <span class="keywordflow">return</span> 0;</div>
 <div class="line">}</div>
+<div class="ttc" id="aclassSchemer_1_1Builder_html_a73f3b3d04dfbef57a3e10a23eb597270"><div class="ttname"><a href="classSchemer_1_1Builder.html#a73f3b3d04dfbef57a3e10a23eb597270">Schemer::Builder::set_log_interval_percent</a></div><div class="ttdeci">Builder &amp; set_log_interval_percent(double value)</div><div class="ttdoc">Sets completion progress percentage required between log updates.</div><div class="ttdef"><b>Definition</b> Builder.h:219</div></div>
 <div class="ttc" id="aclassSchemer_1_1Builder_html_abacb695aacf358965b4c1fede336477c"><div class="ttname"><a href="classSchemer_1_1Builder.html#abacb695aacf358965b4c1fede336477c">Schemer::Builder::set_sigma</a></div><div class="ttdeci">Builder &amp; set_sigma(double value)</div><div class="ttdoc">Sets scale parameter \sigma &gt; 0.</div><div class="ttdef"><b>Definition</b> Builder.h:110</div></div>
 <div class="ttc" id="aclassSchemer_1_1Builder_html_ae814fba27970e4910da3a0920b6aecf7"><div class="ttname"><a href="classSchemer_1_1Builder.html#ae814fba27970e4910da3a0920b6aecf7">Schemer::Builder::set_beta</a></div><div class="ttdeci">Builder &amp; set_beta(double value)</div><div class="ttdoc">Sets skewness parameter \beta \in [-1, 1].</div><div class="ttdef"><b>Definition</b> Builder.h:100</div></div>
 </div><!-- fragment --><h2 class="doxsection"><a class="anchor" id="autotoc_md12"></a>
