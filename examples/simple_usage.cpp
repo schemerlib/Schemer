@@ -7,6 +7,7 @@
  */
 
 #include <iostream>
+
 #include <Eigen/Dense>
 #include <Schemer/Schemer.h>
 
