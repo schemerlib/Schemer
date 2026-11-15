@@ -35,7 +35,7 @@ int main() {
     std::cout << "Value at x = 0: " << values(runner.get_setup().starting_index) << '\n';
 
     // 4. Save the configuration and the final state to a file.
-    runner.save_result("simple_result.tsv");
+    runner.save_result("simple_result.csv");
 
     return 0;
 }

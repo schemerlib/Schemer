@@ -32,7 +32,7 @@ int main() {
 
     runner.run(500);                     // advance 500 steps, t = 500 * dt
     Eigen::VectorXd p = runner.get_values();
-    runner.save_result("result.tsv");
+    runner.save_result("result.csv");
 }
 ```
 
@@ -182,7 +182,7 @@ The header records the scalar configuration parameters, derived grid spacing and
 `run(steps, stream, interval)` first writes the same `#` header (without `#steps`), but only if the stream is still empty. It then writes one line per saved state: at steps `0, interval, 2*interval, …`, plus a final line after the last step. You can call `run()` several times with the same stream to append more rows. The first row of each later call repeats the last state of the previous call.
 
 ```cpp
-std::ofstream history("history.tsv");
+std::ofstream history("history.csv");
 runner.run(1000, history, 50);
 ```
 

@@ -62,7 +62,7 @@ int main() {
             .build();
 
     runner.run(500);                    // P(x, t = 5)
-    runner.save_result("result.tsv");
+    runner.save_result("result.csv");
 }
 ```
 

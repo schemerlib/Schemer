@@ -94,7 +94,7 @@ int main() {
     runner.run(1000);
 
     const Eigen::VectorXd values = runner.get_values();
-    runner.save_result("result.dat");
+    runner.save_result("result.csv");
 }
 ```
 

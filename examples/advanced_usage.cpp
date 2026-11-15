@@ -43,7 +43,7 @@ int main() {
 
     // --- 1. Constant drift --------------------------------------------------
     Schemer::Runner drift_runner = Schemer::Builder(base)
-            .set_drift(1.0)
+            .set_force(1.0)
             .build();
     drift_runner.run(400);
     std::cout << "Drift:           mean = " << mean_position(drift_runner) << '\n';
@@ -76,7 +76,7 @@ int main() {
     // Probability is removed everywhere at the given rate and returned to the
     // reset target (the origin by default, or any grid index).
     Schemer::Runner reset_runner = Schemer::Builder(base)
-            .set_drift(1.0)
+            .set_force(1.0)
             .set_reset_rate(0.5)
             .set_reset_index_zero()
             .build();
