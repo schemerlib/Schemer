@@ -12,6 +12,7 @@ time steps, and saving results.
 - [Features](#features)
 - [Requirements](#requirements)
 - [Installation](#installation)
+- [Documentation](#documentation)
 - [Quick start](#quick-start)
 - [Configuration](#configuration)
 - [Building and running tests](#building-and-running-tests)
@@ -75,6 +76,11 @@ g++ -std=c++20 \
 ```
 
 Replace the paths and source filename with the locations on your system.
+
+## Documentation
+
+The project documentation is hosted at [schemerlib.github.io/Schemer](https://schemerlib.github.io/Schemer/).
+It includes the API reference and usage guidance for the library.
 
 ## Quick start
 
