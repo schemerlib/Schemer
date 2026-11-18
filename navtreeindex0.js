@@ -135,7 +135,6 @@ var NAVTREEINDEX0 =
 "usage.html#autotoc_md10":[5,3,2],
 "usage.html#autotoc_md11":[5,4,0],
 "usage.html#autotoc_md12":[5,4,1],
-"usage.html#autotoc_md13":[5,4,2],
 "usage.html#autotoc_md2":[5,1,2],
 "usage.html#autotoc_md3":[5,1,3],
 "usage.html#autotoc_md4":[5,1,4],

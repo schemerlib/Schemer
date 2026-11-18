@@ -52,8 +52,7 @@ var NAVTREE =
       ] ],
       [ "Examples", "usage.html#usage_examples", [
         [ "Simple usage", "usage.html#autotoc_md11", null ],
-        [ "Advanced usage", "usage.html#autotoc_md12", null ],
-        [ "Output manipulation", "usage.html#autotoc_md13", null ]
+        [ "Advanced usage", "usage.html#autotoc_md12", null ]
       ] ]
     ] ],
     [ "Data Structures", "annotated.html", [
