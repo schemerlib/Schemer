@@ -219,8 +219,3 @@ Drift, force functions and vectors, force schemes, stochastic resetting, a custo
 
 \include advanced_usage.cpp
 
-## Output manipulation
-
-History files, result files and streams, custom delimiters, progress logs, exporting your own CSV and computing statistics.
-
-\include output_manipulation.cpp
